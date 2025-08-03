@@ -1,0 +1,17 @@
+# Clippy configuration file
+# This file configures clippy lints for the project
+
+# Maximum cognitive complexity allowed for functions
+cognitive-complexity-threshold = 30
+
+# Maximum number of lines allowed for functions
+too-many-lines-threshold = 100
+
+# Maximum number of arguments allowed for functions
+too-many-arguments-threshold = 7
+
+# Avoid false positives for certain patterns
+avoid-breaking-exported-api = false
+
+# Enable additional lints
+msrv = "1.70"  # Minimum Supported Rust Version

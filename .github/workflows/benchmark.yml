@@ -1,0 +1,119 @@
+name: Benchmark
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  benchmark:
+    name: Performance Benchmark
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-bench-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-bench-
+
+      - name: Run benchmarks
+        run: cargo bench --all-features
+
+      - name: Store benchmark result
+        uses: benchmark-action/github-action-benchmark@v1
+        if: github.ref == 'refs/heads/main'
+        with:
+          tool: 'cargo'
+          output-file-path: target/criterion/report/index.html
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+
+  size-check:
+    name: Binary Size Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build release binary
+        run: cargo build --release
+
+      - name: Check binary size
+        run: |
+          ls -la target/release/rust_todo_app
+          size target/release/rust_todo_app
+          
+          # Get binary size in bytes
+          BINARY_SIZE=$(stat -c%s target/release/rust_todo_app)
+          echo "Binary size: $BINARY_SIZE bytes"
+          
+          # Convert to MB for easier reading
+          BINARY_SIZE_MB=$(echo "scale=2; $BINARY_SIZE / 1024 / 1024" | bc)
+          echo "Binary size: ${BINARY_SIZE_MB}MB"
+          
+          # Set a reasonable size limit (adjust as needed)
+          MAX_SIZE_MB=50
+          if (( $(echo "$BINARY_SIZE_MB > $MAX_SIZE_MB" | bc -l) )); then
+            echo "❌ Binary size ($BINARY_SIZE_MB MB) exceeds limit ($MAX_SIZE_MB MB)"
+            exit 1
+          else
+            echo "✅ Binary size ($BINARY_SIZE_MB MB) is within acceptable limits"
+          fi
+
+  memory-usage:
+    name: Memory Usage Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install valgrind
+        run: sudo apt-get update && sudo apt-get install -y valgrind
+
+      - name: Build debug binary
+        run: cargo build
+
+      - name: Run memory check
+        run: |
+          timeout 30s valgrind --tool=memcheck --leak-check=full --show-leak-kinds=all \
+            --track-origins=yes --verbose --log-file=valgrind-output.txt \
+            ./target/debug/rust_todo_app &
+          
+          # Give the server time to start
+          sleep 5
+          
+          # Make a simple request
+          curl -f http://127.0.0.1:8000/health || true
+          
+          # Stop the server
+          pkill rust_todo_app || true
+          
+          # Check for memory leaks
+          if grep -q "definitely lost" valgrind-output.txt; then
+            echo "❌ Memory leaks detected!"
+            cat valgrind-output.txt
+            exit 1
+          else
+            echo "✅ No memory leaks detected"
+          fi

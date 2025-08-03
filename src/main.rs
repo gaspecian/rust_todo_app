@@ -1,22 +1,37 @@
-use axum::{
-    routing::{get},
-    Router
-};
+//! # Rust Todo App
+//!
+//! A todo application built with Rust, Axum, and `OpenAPI` documentation.
+//! This application provides a REST API for managing todo items with
+//! comprehensive health checks and Swagger documentation.
 
+use axum::{routing::get, Router};
+use utoipa::OpenApi;
+use utoipa_swagger_ui::SwaggerUi;
+
+mod swagger {
+    pub mod doc_config;
+}
+
+mod modules;
+
+use modules::health::health_routes;
+use swagger::doc_config::ApiDoc;
+
+/// Main application entry point
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Initialize tracing subscriber for logging
     tracing_subscriber::fmt::init();
 
     let app = Router::new()
+        .merge(SwaggerUi::new("/swagger-ui").url("/api-doc/openapi.json", ApiDoc::openapi()))
+        .merge(health_routes())
         .route("/", get(|| async { "Hello, World!" }));
 
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:8000")
-        .await
-        .unwrap();
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:8000").await?;
 
-    tracing::info!("listening on {}", listener.local_addr().unwrap());
-    axum::serve(listener, app)
-        .await
-        .unwrap();
+    tracing::info!("listening on {}", listener.local_addr()?);
+    axum::serve(listener, app).await?;
+
+    Ok(())
 }

@@ -1,0 +1,117 @@
+name: Dependencies
+
+on:
+  schedule:
+    # Run weekly on Mondays at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch: # Allow manual trigger
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  update-dependencies:
+    name: Update Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-edit
+        run: cargo install cargo-edit
+
+      - name: Update dependencies
+        run: |
+          cargo update
+          cargo upgrade --workspace
+
+      - name: Run tests after update
+        run: |
+          cargo test --all-features
+          cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: update dependencies'
+          title: 'chore: update dependencies'
+          body: |
+            This PR updates the project dependencies to their latest versions.
+            
+            Changes made:
+            - Updated Cargo.lock
+            - Updated dependency versions in Cargo.toml
+            
+            All tests and linting checks have passed.
+          branch: update-dependencies
+          delete-branch: true
+
+  check-outdated:
+    name: Check Outdated Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-outdated
+        run: cargo install cargo-outdated
+
+      - name: Check for outdated dependencies
+        run: |
+          echo "## Outdated Dependencies Report" > outdated-report.md
+          echo "" >> outdated-report.md
+          cargo outdated --format json > outdated.json || true
+          
+          if [ -s outdated.json ]; then
+            echo "The following dependencies are outdated:" >> outdated-report.md
+            echo "" >> outdated-report.md
+            echo '```json' >> outdated-report.md
+            cat outdated.json >> outdated-report.md
+            echo '```' >> outdated-report.md
+          else
+            echo "All dependencies are up to date! 🎉" >> outdated-report.md
+          fi
+
+      - name: Upload outdated report
+        uses: actions/upload-artifact@v4
+        with:
+          name: outdated-dependencies-report
+          path: outdated-report.md
+
+  license-check:
+    name: License Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-license
+        run: cargo install cargo-license
+
+      - name: Check licenses
+        run: |
+          echo "## License Report" > license-report.md
+          echo "" >> license-report.md
+          echo "### Direct Dependencies" >> license-report.md
+          echo "" >> license-report.md
+          echo '```' >> license-report.md
+          cargo license >> license-report.md
+          echo '```' >> license-report.md
+
+      - name: Upload license report
+        uses: actions/upload-artifact@v4
+        with:
+          name: license-report
+          path: license-report.md
