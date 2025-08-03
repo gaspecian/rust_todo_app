@@ -7,6 +7,7 @@
 use axum::{routing::get, Router};
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
+use dotenv::dotenv;
 
 mod swagger {
     pub mod doc_config;
@@ -20,6 +21,13 @@ use swagger::doc_config::ApiDoc;
 /// Main application entry point
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Load environment variables from .env file
+    dotenv().ok();
+
+    let address = std::env::var("ADDRESS").unwrap_or_else(|_| "127.0.0.1".to_string());
+    let port = std::env::var("PORT").unwrap_or_else(|_| "8000".to_string());
+    let addr = format!("{}:{}", address, port);
+
     // Initialize tracing subscriber for logging
     tracing_subscriber::fmt::init();
 
@@ -28,7 +36,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .merge(health_routes())
         .route("/", get(|| async { "Hello, World!" }));
 
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:8000").await?;
+    let listener = tokio::net::TcpListener::bind(addr).await?;
 
     tracing::info!("listening on {}", listener.local_addr()?);
     axum::serve(listener, app).await?;
