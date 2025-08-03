@@ -5,9 +5,9 @@
 //! comprehensive health checks and Swagger documentation.
 
 use axum::{routing::get, Router};
+use dotenv::dotenv;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
-use dotenv::dotenv;
 
 mod swagger {
     pub mod doc_config;
