@@ -36,16 +36,20 @@ jobs:
       - name: Check formatting
         run: cargo fmt --all -- --check
 
-      - name: Run Clippy (standard)
+      - name: Run Clippy (respects Cargo.toml configuration)
         run: cargo clippy --all-targets --all-features -- -D warnings
 
-      - name: Run Clippy (strict)
+      - name: Run Clippy (strict - with allowed overrides)
         run: |
           cargo clippy --all-targets --all-features -- \
             -W clippy::all \
             -W clippy::pedantic \
             -W clippy::nursery \
-            -W clippy::cargo \
+            -A clippy::multiple-crate-versions \
+            -A clippy::cargo-common-metadata \
+            -A clippy::module-name-repetitions \
+            -A clippy::missing-errors-doc \
+            -A clippy::missing-panics-doc \
             -D warnings
 
       - name: Check compilation

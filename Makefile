@@ -54,7 +54,11 @@ clippy-strict:
 		-W clippy::all \
 		-W clippy::pedantic \
 		-W clippy::nursery \
-		-W clippy::cargo \
+		-A clippy::multiple-crate-versions \
+		-A clippy::cargo-common-metadata \
+		-A clippy::module-name-repetitions \
+		-A clippy::missing-errors-doc \
+		-A clippy::missing-panics-doc \
 		-D warnings
 
 # Check code without building

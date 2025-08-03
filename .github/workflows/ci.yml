@@ -51,7 +51,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
 
-      - name: Run Clippy
+      - name: Run Clippy (respects Cargo.toml configuration)
         run: cargo clippy --all-targets --all-features -- -D warnings
 
   # Run tests

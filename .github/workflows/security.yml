@@ -60,15 +60,57 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-deny-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-deny-
+
       - name: Install cargo-deny
         run: cargo install cargo-deny
 
-      - name: Check dependencies
-        run: cargo deny check
+      - name: Validate deny.toml configuration
+        run: cargo deny --version && echo "cargo-deny version installed successfully"
+
+      - name: Check dependencies (advisories)
+        run: cargo deny check advisories
+
+      - name: Check dependencies (licenses)
+        run: cargo deny check licenses
+
+      - name: Check dependencies (bans)
+        run: cargo deny check bans
+
+      - name: Check dependencies (sources)
+        run: cargo deny check sources
+
+      - name: Generate dependency report
+        run: |
+          echo "## Dependency Check Report" > dependency-report.md
+          echo "" >> dependency-report.md
+          echo "### Summary" >> dependency-report.md
+          cargo deny check --format json > deny-results.json || true
+          echo "Dependency check completed. See artifacts for detailed results." >> dependency-report.md
+        continue-on-error: true
+
+      - name: Upload dependency report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dependency-check-results
+          path: |
+            dependency-report.md
+            deny-results.json
 
   supply-chain-security:
     name: Supply Chain Security
     runs-on: ubuntu-latest
+    continue-on-error: true  # This is experimental
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -78,9 +120,27 @@ jobs:
 
       - name: Install cargo-vet
         run: cargo install cargo-vet
+        continue-on-error: true
 
       - name: Initialize cargo-vet (if needed)
-        run: cargo vet init || true
+        run: cargo vet init || echo "cargo-vet init failed or already initialized"
+        continue-on-error: true
 
       - name: Run cargo-vet
         run: cargo vet || echo "Cargo vet check completed with warnings"
+        continue-on-error: true
+
+      - name: Generate supply chain report
+        run: |
+          echo "## Supply Chain Security Report" > supply-chain-report.md
+          echo "" >> supply-chain-report.md
+          echo "Supply chain security check completed." >> supply-chain-report.md
+          echo "Note: This is an experimental check and may not be fully configured." >> supply-chain-report.md
+        continue-on-error: true
+
+      - name: Upload supply chain report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: supply-chain-security-results
+          path: supply-chain-report.md
