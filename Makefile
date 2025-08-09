@@ -19,6 +19,15 @@ help:
 	@echo "  ci           - Run all CI checks locally"
 	@echo "  docker-build - Build Docker image"
 	@echo "  docker-run   - Run Docker container"
+	@echo ""
+	@echo "Database commands:"
+	@echo "  db-up        - Start PostgreSQL database"
+	@echo "  db-down      - Stop database services"
+	@echo "  db-logs      - View database logs"
+	@echo "  db-shell     - Connect to database shell"
+	@echo "  db-reset     - Reset database (removes all data)"
+	@echo "  dev-up       - Start full development environment"
+	@echo "  dev-down     - Stop development environment"
 
 # Build the project
 build:
@@ -126,6 +135,33 @@ docker-build:
 
 docker-run:
 	docker run -p 8000:8000 rust_todo_app
+
+# Database commands
+db-up:
+	docker-compose up -d postgres
+
+db-down:
+	docker-compose down
+
+db-logs:
+	docker-compose logs -f postgres
+
+db-shell:
+	docker-compose exec postgres psql -U todo_user -d todo_app
+
+db-reset:
+	docker-compose down -v
+	docker-compose up -d postgres
+
+# Full development environment
+dev-up:
+	docker-compose up -d
+	@echo "Database and pgAdmin are now running"
+	@echo "pgAdmin: http://localhost:5050 (admin@todo.local / admin)"
+	@echo "PostgreSQL: localhost:5432 (todo_user / todo_password)"
+
+dev-down:
+	docker-compose down
 
 # GitHub Actions local testing (requires act)
 act-lint:

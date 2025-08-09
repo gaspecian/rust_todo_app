@@ -26,7 +26,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let address = std::env::var("ADDRESS").unwrap_or_else(|_| "127.0.0.1".to_string());
     let port = std::env::var("PORT").unwrap_or_else(|_| "8000".to_string());
-    let addr = format!("{}:{}", address, port);
+    let addr = format!("{address}:{port}");
 
     // Initialize tracing subscriber for logging
     tracing_subscriber::fmt::init();
