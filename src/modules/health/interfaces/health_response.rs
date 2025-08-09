@@ -14,3 +14,10 @@ pub struct HealthResponse {
     /// Current health status of the application
     pub status: String,
 }
+
+
+#[derive(Serialize, Deserialize, ToSchema, Clone)]
+pub struct PingResponse {
+    pub message: String,
+    pub timestamp: String,
+}
