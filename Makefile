@@ -89,7 +89,7 @@ dev:
 # Install development tools
 install-tools:
 	rustup component add clippy rustfmt
-	cargo install cargo-watch cargo-audit cargo-outdated cargo-deny cargo-edit
+	cargo install cargo-watch cargo-audit cargo-outdated cargo-deny cargo-edit sqlx-cli cargo-llvm-cov
 
 # Security audit
 audit:

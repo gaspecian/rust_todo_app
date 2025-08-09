@@ -13,6 +13,7 @@ use crate::modules::health::{
 ///
 /// This struct defines the `OpenAPI` specification for the entire application,
 /// including all endpoints, schemas, and metadata.
+#[allow(clippy::needless_collect)]
 #[derive(OpenApi)]
 #[openapi(
     info(
