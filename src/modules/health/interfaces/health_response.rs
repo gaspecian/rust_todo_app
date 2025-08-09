@@ -15,7 +15,6 @@ pub struct HealthResponse {
     pub status: String,
 }
 
-
 #[derive(Serialize, Deserialize, ToSchema, Clone)]
 pub struct PingResponse {
     pub message: String,

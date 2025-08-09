@@ -6,8 +6,8 @@
 
 use axum::Router;
 use dotenv::dotenv;
-use sqlx::{Pool, Postgres};
 use sqlx::postgres::PgPoolOptions;
+use sqlx::{Pool, Postgres};
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
@@ -37,11 +37,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt::init();
 
     // Get database URL from environment
-    let database_url = std::env::var("DATABASE_URL")
-        .unwrap_or_else(|_| {
-            tracing::warn!("DATABASE_URL not set, using default PostgreSQL connection");
-            "postgresql://localhost/rust_todo_app".to_string()
-        });
+    let database_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| {
+        tracing::warn!("DATABASE_URL not set, using default PostgreSQL connection");
+        "postgresql://localhost/rust_todo_app".to_string()
+    });
 
     // Create database connection pool
     let pool = PgPoolOptions::new()
@@ -74,7 +73,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     })?;
 
     tracing::info!("Server listening on {}", listener.local_addr()?);
-    
+
     // Start the server
     axum::serve(listener, app).await.map_err(|e| {
         tracing::error!("Server error: {}", e);

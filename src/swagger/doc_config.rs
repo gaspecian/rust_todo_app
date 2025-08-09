@@ -4,7 +4,10 @@
 
 use utoipa::OpenApi;
 
-use crate::modules::health::{interfaces::health_response::{HealthResponse, PingResponse}, service};
+use crate::modules::health::{
+    interfaces::health_response::{HealthResponse, PingResponse},
+    service,
+};
 
 /// `OpenAPI` documentation configuration
 ///
