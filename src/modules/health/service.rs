@@ -47,7 +47,7 @@ pub async fn ping(State(state): State<AppState>) -> impl IntoResponse {
                 axum::http::StatusCode::INTERNAL_SERVER_ERROR,
                 Json(PingResponse {
                     message: "Database error".to_string(),
-                    timestamp: "".to_string(),
+                    timestamp: String::new(),
                 }),
             );
         }
