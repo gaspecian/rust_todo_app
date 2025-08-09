@@ -47,6 +47,7 @@ missing_errors_doc = "allow"
 missing_panics_doc = "allow"
 cargo_common_metadata = "allow"
 multiple_crate_versions = "allow"
+needless_for_each = "allow"
 
 # Specific lints to deny
 unwrap_used = "deny"
