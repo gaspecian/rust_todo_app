@@ -5,7 +5,7 @@
 //! comprehensive health checks and Swagger documentation.
 
 use axum::Router;
-use dotenv::dotenv;
+use dotenvy::dotenv;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{Pool, Postgres};
 use utoipa::OpenApi;
