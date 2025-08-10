@@ -1,0 +1,71 @@
+name: Lint
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  lint:
+    name: Lint Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-lint-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-lint-
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Run Clippy (respects Cargo.toml configuration)
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Run Clippy (strict - with allowed overrides)
+        run: |
+          cargo clippy --all-targets --all-features -- \
+            -W clippy::all \
+            -W clippy::pedantic \
+            -W clippy::nursery \
+            -A clippy::multiple-crate-versions \
+            -A clippy::cargo-common-metadata \
+            -A clippy::module-name-repetitions \
+            -A clippy::missing-errors-doc \
+            -A clippy::missing-panics-doc \
+            -A clippy::needless-for-each \
+            -D warnings
+
+      - name: Check compilation
+        run: cargo check --all-targets --all-features
+
+      - name: Verify no TODO/FIXME comments
+        run: |
+          if grep -r "TODO\|FIXME" src/; then
+            echo "Found TODO or FIXME comments. Please resolve them before merging."
+            exit 1
+          fi
+
+      - name: Check for println! statements
+        run: |
+          if grep -r "println!" src/ --exclude-dir=target; then
+            echo "Found println! statements. Use proper logging instead."
+            exit 1
+          fi

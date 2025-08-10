@@ -1,0 +1,73 @@
+# cargo-deny configuration for Rust Todo App
+# This file configures cargo-deny for dependency management and security
+
+[graph]
+# Target platforms to check
+targets = [
+    "x86_64-unknown-linux-gnu",
+    "x86_64-pc-windows-msvc",
+    "x86_64-apple-darwin",
+]
+# Use all features when building the dependency graph
+all-features = true
+
+[output]
+# Feature depth for inclusion graphs
+feature-depth = 1
+
+# Advisory database configuration
+[advisories]
+# Path where advisory databases are stored
+db-path = "$CARGO_HOME/advisory-dbs"
+# Advisory database URLs
+db-urls = ["https://github.com/rustsec/advisory-db"]
+# List of advisory IDs to ignore
+ignore = [
+    # Add specific advisory IDs here if needed
+    # "RUSTSEC-0000-0000",
+]
+
+# License configuration
+[licenses]
+# Confidence threshold for license detection (0.0 to 1.0)
+confidence-threshold = 0.8
+# Explicitly allowed licenses
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Unicode-DFS-2016",
+    "Unicode-3.0",  # Required for ICU crates
+    "Zlib",         # Required for zlib-related crates
+]
+
+[licenses.private]
+# Ignore private/unpublished crates
+ignore = true
+
+# Banned crates configuration
+[bans]
+# Warn about multiple versions of the same crate
+multiple-versions = "warn"
+# Allow wildcard version requirements
+wildcards = "allow"
+# Highlighting for multiple versions in graphs
+highlight = "all"
+# List of explicitly allowed crates (use sparingly)
+allow = []
+# List of banned crates
+deny = []
+
+# Source configuration
+[sources]
+# Warn about unknown registries
+unknown-registry = "warn"
+# Warn about unknown git sources
+unknown-git = "warn"
+# Allowed crate registries
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+# Allowed git repositories
+allow-git = []
