@@ -68,6 +68,7 @@ clippy-strict:
 		-A clippy::module-name-repetitions \
 		-A clippy::missing-errors-doc \
 		-A clippy::missing-panics-doc \
+		-A clippy::needless-for-each \
 		-D warnings
 
 # Check code without building
