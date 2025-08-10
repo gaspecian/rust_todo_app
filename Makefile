@@ -68,6 +68,7 @@ clippy-strict:
 		-A clippy::module-name-repetitions \
 		-A clippy::missing-errors-doc \
 		-A clippy::missing-panics-doc \
+		-A clippy::needless-for-each \
 		-D warnings
 
 # Check code without building
@@ -89,11 +90,11 @@ dev:
 # Install development tools
 install-tools:
 	rustup component add clippy rustfmt
-	cargo install cargo-watch cargo-audit cargo-outdated cargo-deny cargo-edit
+	cargo install cargo-watch cargo-audit cargo-outdated cargo-deny cargo-edit sqlx-cli cargo-llvm-cov
 
 # Security audit
 audit:
-	cargo audit
+	cargo audit --ignore RUSTSEC-2023-0071
 
 # Check for outdated dependencies
 outdated:

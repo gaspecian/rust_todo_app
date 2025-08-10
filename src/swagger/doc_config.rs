@@ -4,7 +4,10 @@
 
 use utoipa::OpenApi;
 
-use crate::modules::health::{interfaces::health_response::HealthResponse, service};
+use crate::modules::health::{
+    interfaces::health_response::{HealthResponse, PingResponse},
+    service,
+};
 
 /// `OpenAPI` documentation configuration
 ///
@@ -19,9 +22,10 @@ use crate::modules::health::{interfaces::health_response::HealthResponse, servic
     ),
     paths(
         service::health_check,
+        service::ping
     ),
     components(
-        schemas(HealthResponse)
+        schemas(HealthResponse, PingResponse)
     ),
     tags(
         (name = "Health Check",

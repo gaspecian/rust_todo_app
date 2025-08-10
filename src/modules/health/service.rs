@@ -2,9 +2,12 @@
 //!
 //! This module contains the business logic for health check operations.
 
-use axum::{response::IntoResponse, Json};
+use axum::{extract::State, response::IntoResponse, Json};
 
-use crate::modules::health::interfaces::health_response::HealthResponse;
+use crate::{
+    modules::health::interfaces::health_response::{HealthResponse, PingResponse},
+    AppState,
+};
 
 /// Health check endpoint handler
 ///
@@ -22,6 +25,36 @@ use crate::modules::health::interfaces::health_response::HealthResponse;
 pub async fn health_check() -> impl IntoResponse {
     let response = HealthResponse {
         status: "Healthy".to_string(),
+    };
+    (axum::http::StatusCode::OK, Json(response))
+}
+
+#[utoipa::path(
+    get,
+    path = "/ping",
+    tag = "Health Check",
+    responses(
+        (status = 200, description = "Ping successful", body = PingResponse)
+    )
+)]
+pub async fn ping(State(state): State<AppState>) -> impl IntoResponse {
+    let now = match sqlx::query!("SELECT NOW()").fetch_one(&state.db_pool).await {
+        Ok(row) => row,
+        Err(e) => {
+            tracing::error!("Failed to fetch current time from database: {}", e);
+            return (
+                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                Json(PingResponse {
+                    message: "Database error".to_string(),
+                    timestamp: String::new(),
+                }),
+            );
+        }
+    };
+
+    let response = PingResponse {
+        message: "Pong".to_string(),
+        timestamp: format!("{:?}", now.now),
     };
     (axum::http::StatusCode::OK, Json(response))
 }
