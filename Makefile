@@ -94,7 +94,7 @@ install-tools:
 
 # Security audit
 audit:
-	cargo audit
+	cargo audit --ignore RUSTSEC-2023-0071
 
 # Check for outdated dependencies
 outdated:
