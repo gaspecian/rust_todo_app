@@ -3,6 +3,7 @@
 //! This module contains the business logic for health check operations.
 
 use axum::{extract::State, response::IntoResponse, Json};
+use chrono;
 
 use crate::{
     modules::health::interfaces::health_response::{HealthResponse, PingResponse},
@@ -38,23 +39,21 @@ pub async fn health_check() -> impl IntoResponse {
     )
 )]
 pub async fn ping(State(state): State<AppState>) -> impl IntoResponse {
-    let now = match sqlx::query!("SELECT NOW()").fetch_one(&state.db_pool).await {
-        Ok(row) => row,
-        Err(e) => {
-            tracing::error!("Failed to fetch current time from database: {}", e);
-            return (
-                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-                Json(PingResponse {
-                    message: "Database error".to_string(),
-                    timestamp: String::new(),
-                }),
-            );
+    match sqlx::query!("SELECT NOW()").fetch_one(&state.db_pool).await {
+        Ok(row) => {
+            let response = PingResponse {
+                message: "Pong".to_string(),
+                timestamp: format!("{:?}", row.now),
+            };
+            (axum::http::StatusCode::OK, Json(response))
         }
-    };
-
-    let response = PingResponse {
-        message: "Pong".to_string(),
-        timestamp: format!("{:?}", now.now),
-    };
-    (axum::http::StatusCode::OK, Json(response))
+        Err(e) => {
+            tracing::error!("Database connection failed: {}", e);
+            let response = PingResponse {
+                message: "Database unavailable".to_string(),
+                timestamp: chrono::Utc::now().to_rfc3339(),
+            };
+            (axum::http::StatusCode::SERVICE_UNAVAILABLE, Json(response))
+        }
+    }
 }
