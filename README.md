@@ -1,5 +1,36 @@
 # Rust Todo App
 
+# Rust Todo App
+
+<!-- Build and Quality Status -->
+[![CI](https://github.com/gaspecian/rust_todo_app/workflows/CI/badge.svg)](https://github.com/gaspecian/rust_todo_app/actions/workflows/ci.yml)
+[![Lint](https://github.com/gaspecian/rust_todo_app/workflows/Lint/badge.svg)](https://github.com/gaspecian/rust_todo_app/actions/workflows/lint.yml)
+[![Security](https://github.com/gaspecian/rust_todo_app/workflows/Security/badge.svg)](https://github.com/gaspecian/rust_todo_app/actions/workflows/security.yml)
+[![Dependencies](https://github.com/gaspecian/rust_todo_app/workflows/Dependencies/badge.svg)](https://github.com/gaspecian/rust_todo_app/actions/workflows/dependencies.yml)
+[![Release](https://github.com/gaspecian/rust_todo_app/workflows/Release/badge.svg)](https://github.com/gaspecian/rust_todo_app/actions/workflows/release.yml)
+
+<!-- Project Information -->
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Rust Version](https://img.shields.io/badge/rust-1.70%2B-blue.svg)](https://www.rust-lang.org)
+[![GitHub release](https://img.shields.io/github/v/release/gaspecian/rust_todo_app)](https://github.com/gaspecian/rust_todo_app/releases)
+[![GitHub tag](https://img.shields.io/github/v/tag/gaspecian/rust_todo_app)](https://github.com/gaspecian/rust_todo_app/tags)
+
+<!-- Repository Stats -->
+[![GitHub issues](https://img.shields.io/github/issues/gaspecian/rust_todo_app)](https://github.com/gaspecian/rust_todo_app/issues)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr/gaspecian/rust_todo_app)](https://github.com/gaspecian/rust_todo_app/pulls)
+[![GitHub stars](https://img.shields.io/github/stars/gaspecian/rust_todo_app)](https://github.com/gaspecian/rust_todo_app/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/gaspecian/rust_todo_app)](https://github.com/gaspecian/rust_todo_app/network)
+
+<!-- Docker and Deployment -->
+[![Docker Image](https://img.shields.io/badge/docker-ghcr.io-blue.svg)](https://github.com/gaspecian/rust_todo_app/pkgs/container/rust_todo_app)
+[![Docker Pulls](https://img.shields.io/docker/pulls/gaspecian/rust_todo_app)](https://github.com/gaspecian/rust_todo_app/pkgs/container/rust_todo_app)
+
+<!-- Code Quality -->
+[![Lines of Code](https://img.shields.io/tokei/lines/github/gaspecian/rust_todo_app)](https://github.com/gaspecian/rust_todo_app)
+[![Code Size](https://img.shields.io/github/languages/code-size/gaspecian/rust_todo_app)](https://github.com/gaspecian/rust_todo_app)
+[![Repository Size](https://img.shields.io/github/repo-size/gaspecian/rust_todo_app)](https://github.com/gaspecian/rust_todo_app)
+[![Last Commit](https://img.shields.io/github/last-commit/gaspecian/rust_todo_app)](https://github.com/gaspecian/rust_todo_app/commits/main)
+
 A modern todo application built with Rust, Axum, and comprehensive OpenAPI documentation.
 
 ## Features
