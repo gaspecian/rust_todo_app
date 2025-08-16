@@ -2,7 +2,7 @@
 # This creates a minimal production image with multi-platform support
 
 # Build stage
-FROM --platform=$BUILDPLATFORM rust:1.75-slim as builder
+FROM --platform=$BUILDPLATFORM rust:1.89-slim as builder
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
