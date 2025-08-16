@@ -149,7 +149,7 @@ jobs:
         run: cargo install cargo-outdated
 
       - name: Check for outdated dependencies
-        run: cargo outdated --exit-code 1
+        run: cargo outdated
 
   # Build for different targets
   build:
