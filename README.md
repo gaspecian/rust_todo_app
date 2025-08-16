@@ -50,9 +50,7 @@ A modern, high-performance todo application built with Rust, Axum web framework,
 - [API Documentation](#-api-documentation)
 - [Development](#-development)
 - [Docker Usage](#-docker-usage)
-- [Database Setup](#-database-setup)
 - [Project Structure](#-project-structure)
-- [Contributing](#-contributing)
 - [Troubleshooting](#-troubleshooting)
 
 ## 🚀 Quick Start
@@ -128,27 +126,7 @@ Once running, access the comprehensive API documentation:
 |----------|-----|-------------|
 | **Swagger UI** | http://localhost:8000/swagger-ui | Interactive API documentation |
 | **OpenAPI JSON** | http://localhost:8000/api-doc/openapi.json | Machine-readable API spec |
-| **Health Check** | http://localhost:8000/health | Application health status |
-| **Readiness Check** | http://localhost:8000/ready | Service readiness status |
 
-### API Endpoints
-
-```bash
-# Health endpoints
-GET  /health              # Application health
-GET  /ready               # Readiness check
-
-# Todo endpoints (coming soon)
-GET    /api/v1/todos      # List all todos
-POST   /api/v1/todos      # Create new todo
-GET    /api/v1/todos/{id} # Get specific todo
-PUT    /api/v1/todos/{id} # Update todo
-DELETE /api/v1/todos/{id} # Delete todo
-
-# User management
-POST /api/v1/signup       # User registration
-POST /api/v1/login        # User authentication
-```
 
 ## 🛠️ Development
 
@@ -287,19 +265,6 @@ PORT=8000
 HOST=127.0.0.1
 ```
 
-### Migrations
-
-```bash
-# Install sqlx-cli
-cargo install sqlx-cli
-
-# Run migrations
-sqlx migrate run
-
-# Create new migration
-sqlx migrate add create_todos_table
-```
-
 ## 📁 Project Structure
 
 ```
@@ -327,28 +292,6 @@ rust_todo_app/
 ├── 📄 rustfmt.toml                  # Formatter configuration
 └── 📄 deny.toml                     # Dependency policies
 ```
-
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guide](docs/CONTRIBUTING.md) for details.
-
-### Quick Contribution Steps
-
-1. **Fork** the repository
-2. **Create** a feature branch: `git checkout -b feature/amazing-feature`
-3. **Make** your changes
-4. **Run** quality checks: `make ci`
-5. **Commit** your changes: `git commit -m 'Add amazing feature'`
-6. **Push** to the branch: `git push origin feature/amazing-feature`
-7. **Open** a Pull Request
-
-### Development Guidelines
-
-- Follow Rust best practices and idioms
-- Write comprehensive tests for new features
-- Update documentation for API changes
-- Ensure all CI checks pass
-- Use conventional commit messages
 
 ## 🔧 Troubleshooting
 
