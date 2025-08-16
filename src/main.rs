@@ -18,6 +18,7 @@ mod swagger {
 mod modules;
 
 use modules::health::health_routes;
+use modules::signup::signup_routes;
 use swagger::doc_config::ApiDoc;
 
 /// Application state containing shared resources
@@ -64,6 +65,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let app = Router::new()
         .merge(SwaggerUi::new("/swagger-ui").url("/api-doc/openapi.json", ApiDoc::openapi()))
         .merge(health_routes())
+        .merge(signup_routes())
         .with_state(app_state);
 
     // Create TCP listener
