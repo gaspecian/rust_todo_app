@@ -1,7 +1,5 @@
 # Rust Todo App
 
-# Rust Todo App
-
 <!-- Build and Quality Status -->
 [![CI](https://github.com/gaspecian/rust_todo_app/workflows/CI/badge.svg)](https://github.com/gaspecian/rust_todo_app/actions/workflows/ci.yml)
 [![Lint](https://github.com/gaspecian/rust_todo_app/workflows/Lint/badge.svg)](https://github.com/gaspecian/rust_todo_app/actions/workflows/lint.yml)
@@ -31,105 +29,374 @@
 [![Repository Size](https://img.shields.io/github/repo-size/gaspecian/rust_todo_app)](https://github.com/gaspecian/rust_todo_app)
 [![Last Commit](https://img.shields.io/github/last-commit/gaspecian/rust_todo_app)](https://github.com/gaspecian/rust_todo_app/commits/main)
 
-A modern todo application built with Rust, Axum, and comprehensive OpenAPI documentation.
+A modern, high-performance todo application built with Rust, Axum web framework, PostgreSQL, and comprehensive OpenAPI documentation. Features enterprise-grade CI/CD, security scanning, and containerized deployment.
 
-## Features
+## 🚀 Features
 
-- 🚀 **Fast & Efficient**: Built with Rust and Axum for high performance
-- 📚 **OpenAPI Documentation**: Comprehensive API documentation with Swagger UI
-- 🏥 **Health Checks**: Built-in health monitoring endpoints
-- 🔧 **Developer Friendly**: Extensive linting and code quality tools
-- 📦 **Modular Architecture**: Clean, maintainable code structure
+- **⚡ High Performance**: Built with Rust and Axum for blazing-fast API responses
+- **📚 OpenAPI Documentation**: Interactive Swagger UI with comprehensive API docs
+- **🗄️ PostgreSQL Integration**: Robust database layer with connection pooling
+- **🏥 Health Monitoring**: Built-in health checks and observability endpoints
+- **🔒 Security First**: Automated security auditing and vulnerability scanning
+- **🐳 Container Ready**: Multi-platform Docker images published to GitHub Container Registry
+- **🔧 Developer Experience**: Extensive tooling, linting, and development automation
+- **📦 Modular Architecture**: Clean, maintainable, and extensible code structure
+- **🚦 CI/CD Pipeline**: Comprehensive GitHub Actions workflows for quality assurance
 
-## Quick Start
+## 📋 Table of Contents
+
+- [Quick Start](#-quick-start)
+- [Installation Methods](#-installation-methods)
+- [API Documentation](#-api-documentation)
+- [Development](#-development)
+- [Docker Usage](#-docker-usage)
+- [Database Setup](#-database-setup)
+- [Project Structure](#-project-structure)
+- [Contributing](#-contributing)
+- [Troubleshooting](#-troubleshooting)
+
+## 🚀 Quick Start
 
 ### Prerequisites
 
-- Rust 1.70+ installed
-- Cargo package manager
+- **Rust 1.70+** - [Install Rust](https://rustup.rs/)
+- **PostgreSQL 12+** - [Install PostgreSQL](https://www.postgresql.org/download/)
+- **Docker** (optional) - [Install Docker](https://docs.docker.com/get-docker/)
 
-### Installation
+### Fastest Setup (Docker)
 
-1. Clone the repository:
 ```bash
+# Clone the repository
 git clone https://github.com/gaspecian/rust_todo_app.git
 cd rust_todo_app
+
+# Start the full development environment
+make dev-up
+
+# The application will be available at http://localhost:8000
 ```
 
-2. Install development tools:
+## 📦 Installation Methods
+
+### Method 1: Local Development
+
 ```bash
+# 1. Clone and setup
+git clone https://github.com/gaspecian/rust_todo_app.git
+cd rust_todo_app
+
+# 2. Install development tools
 make install-tools
-```
 
-3. Run the application:
-```bash
+# 3. Setup environment
+cp .env.example .env
+# Edit .env with your database configuration
+
+# 4. Start database
+make db-up
+
+# 5. Run the application
 make run
 ```
 
-The application will be available at `http://127.0.0.1:8000`
+### Method 2: Docker Container
 
-## API Documentation
+```bash
+# Pull and run the latest image
+docker pull ghcr.io/gaspecian/rust_todo_app:latest
+docker run -p 8000:8000 \
+  -e DATABASE_URL="postgresql://user:pass@host:5432/dbname" \
+  ghcr.io/gaspecian/rust_todo_app:latest
+```
 
-Once the application is running, you can access:
+### Method 3: Docker Compose
 
-- **Swagger UI**: http://127.0.0.1:8000/swagger-ui
-- **OpenAPI JSON**: http://127.0.0.1:8000/api-doc/openapi.json
-- **Health Check**: http://127.0.0.1:8000/health
+```bash
+# Clone repository
+git clone https://github.com/gaspecian/rust_todo_app.git
+cd rust_todo_app
 
-## Development
+# Start everything with Docker Compose
+docker-compose up -d
+```
 
-### Available Commands
+## 📚 API Documentation
+
+Once running, access the comprehensive API documentation:
+
+| Resource | URL | Description |
+|----------|-----|-------------|
+| **Swagger UI** | http://localhost:8000/swagger-ui | Interactive API documentation |
+| **OpenAPI JSON** | http://localhost:8000/api-doc/openapi.json | Machine-readable API spec |
+| **Health Check** | http://localhost:8000/health | Application health status |
+| **Readiness Check** | http://localhost:8000/ready | Service readiness status |
+
+### API Endpoints
+
+```bash
+# Health endpoints
+GET  /health              # Application health
+GET  /ready               # Readiness check
+
+# Todo endpoints (coming soon)
+GET    /api/v1/todos      # List all todos
+POST   /api/v1/todos      # Create new todo
+GET    /api/v1/todos/{id} # Get specific todo
+PUT    /api/v1/todos/{id} # Update todo
+DELETE /api/v1/todos/{id} # Delete todo
+
+# User management
+POST /api/v1/signup       # User registration
+POST /api/v1/login        # User authentication
+```
+
+## 🛠️ Development
+
+### Available Make Commands
 
 ```bash
 # Development
-make run          # Run the application
-make dev          # Run with auto-reload (requires cargo-watch)
-make build        # Build the project
-make test         # Run tests
+make run              # Run the application
+make dev              # Run with auto-reload (requires cargo-watch)
+make build            # Build the project
+make build-release    # Build optimized release version
+make test             # Run all tests
+make ci               # Run all CI checks locally
 
 # Code Quality
-make lint         # Run all linting tools
-make fmt          # Format code
-make clippy       # Run clippy linter
-make check        # Check code without building
+make lint             # Run all linting tools
+make fmt              # Format code with rustfmt
+make clippy           # Run clippy linter
+make check            # Check code without building
+
+# Database Management
+make db-up            # Start PostgreSQL database
+make db-down          # Stop database services
+make db-logs          # View database logs
+make db-shell         # Connect to database shell
+make db-reset         # Reset database (removes all data)
+
+# Development Environment
+make dev-up           # Start full development environment
+make dev-down         # Stop development environment
+
+# Docker Operations
+make docker-build     # Build Docker image locally
+make docker-run       # Run Docker container
 
 # Maintenance
-make clean        # Clean build artifacts
-make audit        # Security audit
-make outdated     # Check for outdated dependencies
+make clean            # Clean build artifacts
+make audit            # Security audit
+make outdated         # Check for outdated dependencies
 ```
 
-### Code Quality
+### Code Quality Standards
 
-This project uses comprehensive linting and code quality tools:
+This project maintains high code quality through:
 
-- **Clippy**: Advanced Rust linter with pedantic rules
-- **Rustfmt**: Consistent code formatting
-- **Cargo Audit**: Security vulnerability scanning
-- **Pre-commit Hooks**: Automated quality checks
+- **🔍 Clippy**: Advanced Rust linter with pedantic rules
+- **📐 Rustfmt**: Consistent code formatting
+- **🔒 Cargo Audit**: Security vulnerability scanning
+- **📊 Coverage**: Code coverage reporting
+- **🚨 Pre-commit Hooks**: Automated quality checks
+- **📋 Deny.toml**: Dependency and license compliance
 
-### Project Structure
+### Development Workflow
+
+1. **Setup Development Environment**:
+   ```bash
+   make install-tools
+   make dev-up
+   ```
+
+2. **Make Changes**: Edit code with your preferred editor
+
+3. **Run Quality Checks**:
+   ```bash
+   make lint          # Format and lint code
+   make test          # Run tests
+   make ci            # Full CI check locally
+   ```
+
+4. **Test Locally**:
+   ```bash
+   make run           # Start the application
+   # Test your changes at http://localhost:8000
+   ```
+
+## 🐳 Docker Usage
+
+### Pre-built Images
+
+Images are automatically built and published to GitHub Container Registry:
+
+```bash
+# Latest stable release
+docker pull ghcr.io/gaspecian/rust_todo_app:latest
+
+# Specific version
+docker pull ghcr.io/gaspecian/rust_todo_app:v1.0.0
+
+# Development version (main branch)
+docker pull ghcr.io/gaspecian/rust_todo_app:main
+```
+
+### Building Locally
+
+```bash
+# Build image
+make docker-build
+
+# Run container
+make docker-run
+
+# Or manually
+docker build -t rust_todo_app .
+docker run -p 8000:8000 rust_todo_app
+```
+
+### Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://postgres:password@localhost:5432/todo_app` |
+| `RUST_LOG` | Logging level | `info` |
+| `PORT` | Server port | `8000` |
+| `HOST` | Server host | `0.0.0.0` |
+
+## 🗄️ Database Setup
+
+### Local PostgreSQL
+
+```bash
+# Start database with Docker Compose
+make db-up
+
+# Or install PostgreSQL locally and create database
+createdb todo_app
+```
+
+### Database Configuration
+
+Create `.env` file:
+
+```env
+DATABASE_URL=postgresql://postgres:password@localhost:5432/todo_app
+RUST_LOG=debug
+PORT=8000
+HOST=127.0.0.1
+```
+
+### Migrations
+
+```bash
+# Install sqlx-cli
+cargo install sqlx-cli
+
+# Run migrations
+sqlx migrate run
+
+# Create new migration
+sqlx migrate add create_todos_table
+```
+
+## 📁 Project Structure
 
 ```
-src/
-├── main.rs                 # Application entry point
-├── modules/                # Application modules
-│   └── health/            # Health check module
-│       ├── mod.rs         # Module definition
-│       ├── routes.rs      # HTTP routes
-│       ├── service.rs     # Business logic
-│       └── interfaces/    # Data structures
-└── swagger/               # OpenAPI configuration
+rust_todo_app/
+├── 📁 src/
+│   ├── 📄 main.rs                    # Application entry point
+│   ├── 📁 modules/                   # Feature modules
+│   │   ├── 📁 health/               # Health check endpoints
+│   │   │   ├── 📄 mod.rs            # Module definition
+│   │   │   ├── 📄 routes.rs         # HTTP route handlers
+│   │   │   ├── 📄 service.rs        # Business logic
+│   │   │   └── 📁 interfaces/       # Data structures & DTOs
+│   │   └── 📁 signup/               # User registration
+│   └── 📁 swagger/                  # OpenAPI configuration
+│       └── 📄 doc_config.rs         # API documentation setup
+├── 📁 .github/                      # GitHub Actions workflows
+│   └── 📁 workflows/                # CI/CD pipelines
+├── 📁 docs/                         # Additional documentation
+├── 📁 db/                           # Database migrations
+├── 📄 Dockerfile                    # Container configuration
+├── 📄 docker-compose.yml            # Development environment
+├── 📄 Makefile                      # Development commands
+├── 📄 Cargo.toml                    # Rust dependencies
+├── 📄 clippy.toml                   # Linter configuration
+├── 📄 rustfmt.toml                  # Formatter configuration
+└── 📄 deny.toml                     # Dependency policies
 ```
 
-## Contributing
+## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Run `make lint` to ensure code quality
-5. Submit a pull request
+We welcome contributions! Please see our [Contributing Guide](docs/CONTRIBUTING.md) for details.
 
-## License
+### Quick Contribution Steps
+
+1. **Fork** the repository
+2. **Create** a feature branch: `git checkout -b feature/amazing-feature`
+3. **Make** your changes
+4. **Run** quality checks: `make ci`
+5. **Commit** your changes: `git commit -m 'Add amazing feature'`
+6. **Push** to the branch: `git push origin feature/amazing-feature`
+7. **Open** a Pull Request
+
+### Development Guidelines
+
+- Follow Rust best practices and idioms
+- Write comprehensive tests for new features
+- Update documentation for API changes
+- Ensure all CI checks pass
+- Use conventional commit messages
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+**Database Connection Issues**:
+```bash
+# Check if PostgreSQL is running
+make db-logs
+
+# Reset database
+make db-reset
+make db-up
+```
+
+**Build Issues**:
+```bash
+# Clean and rebuild
+make clean
+make build
+```
+
+**Docker Issues**:
+```bash
+# Rebuild image
+docker-compose down
+docker-compose build --no-cache
+docker-compose up
+```
+
+### Getting Help
+
+- 📖 Check our [documentation](docs/)
+- 🐛 [Report bugs](https://github.com/gaspecian/rust_todo_app/issues)
+- 💬 [Ask questions](https://github.com/gaspecian/rust_todo_app/discussions)
+- 📧 Contact: [your-email@example.com](mailto:your-email@example.com)
+
+## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- [Axum](https://github.com/tokio-rs/axum) - Modern web framework
+- [SQLx](https://github.com/launchbadge/sqlx) - Async SQL toolkit
+- [Utoipa](https://github.com/juhaku/utoipa) - OpenAPI documentation
+- [Tokio](https://tokio.rs/) - Async runtime
+
+---
+
+**Built with ❤️ and Rust 🦀**
