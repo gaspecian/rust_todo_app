@@ -48,7 +48,6 @@ A modern, high-performance todo application built with Rust, Axum web framework,
 - [Quick Start](#-quick-start)
 - [Installation Methods](#-installation-methods)
 - [API Documentation](#-api-documentation)
-- [Development](#-development)
 - [Docker Usage](#-docker-usage)
 - [Project Structure](#-project-structure)
 - [Troubleshooting](#-troubleshooting)
