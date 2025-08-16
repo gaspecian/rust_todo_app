@@ -4,9 +4,14 @@
 
 use utoipa::OpenApi;
 
+use crate::modules::common::ErrorResponse;
 use crate::modules::health::{
     interfaces::health_response::{HealthResponse, PingResponse},
     service,
+};
+use crate::modules::signup::{
+    interfaces::user_interfaces::{UserRequest, UserResponse},
+    service as signup_service,
 };
 
 /// `OpenAPI` documentation configuration
@@ -22,14 +27,17 @@ use crate::modules::health::{
     ),
     paths(
         service::health_check,
-        service::ping
+        service::ping,
+        signup_service::signup
     ),
     components(
-        schemas(HealthResponse, PingResponse)
+        schemas(HealthResponse, PingResponse, UserRequest, UserResponse, ErrorResponse)
     ),
     tags(
         (name = "Health Check",
-        description = "Endpoints related to health checks and basic functionality.")
+        description = "Endpoints related to health checks and basic functionality."),
+        (name = "SignUp",
+        description = "User registration and signup endpoints.")
     )
 )]
 pub struct ApiDoc;
