@@ -1,7 +1,7 @@
 //! User Repository
 //! This module defines the user repository interface for the signup process.
 
-use crate::modules::signup::interfaces::user_interfaces::{ NewUserInterface, UserResponse };
+use crate::modules::signup::interfaces::user_interfaces::{NewUserInterface, UserResponse};
 use sqlx::{Pool, Postgres};
 
 pub struct UserRepository {
@@ -10,10 +10,8 @@ pub struct UserRepository {
 
 impl UserRepository {
     // Contructor to create a new UserRepository instance
-    pub fn new(pool: Pool<Postgres>) -> Self {
-        Self {
-            pool,
-        }
+    pub const fn new(pool: Pool<Postgres>) -> Self {
+        Self { pool }
     }
 
     // Method that fetches a user by username
@@ -43,12 +41,10 @@ impl UserRepository {
 
     // Method that checks if a user exists by email
     pub async fn exists_by_email(&self, email: &str) -> Result<Option<bool>, sqlx::Error> {
-        let exists = sqlx::query_scalar!(
-            "SELECT EXISTS(SELECT 1 FROM users WHERE email = $1)",
-            email
-        )
-        .fetch_one(&self.pool)
-        .await?;
+        let exists =
+            sqlx::query_scalar!("SELECT EXISTS(SELECT 1 FROM users WHERE email = $1)", email)
+                .fetch_one(&self.pool)
+                .await?;
 
         Ok(exists)
     }
@@ -63,11 +59,10 @@ impl UserRepository {
         )
         .fetch_one(&self.pool)
         .await?;
-        
+
         Ok(UserResponse {
             id: user_id.to_string(),
             username: user.username.clone(),
         })
     }
 }
-

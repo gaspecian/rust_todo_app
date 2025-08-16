@@ -23,7 +23,6 @@ pub struct UserInterface {
     pub updated_at: Option<OffsetDateTime>,
 }
 
-
 #[derive(Serialize, Deserialize, ToSchema, Clone)]
 pub struct NewUserInterface {
     pub username: String,
@@ -36,5 +35,5 @@ pub struct NewUserInterface {
 #[derive(Serialize, Deserialize, ToSchema, Clone)]
 pub struct UserResponse {
     pub id: String,
-    pub username: String
+    pub username: String,
 }

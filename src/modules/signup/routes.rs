@@ -1,4 +1,4 @@
-//! #SignUp Routes
+//! #`SignUp` Routes
 //! This module defines the HTTP routes for user signup functionality.
 
 use axum::{routing::post, Router};

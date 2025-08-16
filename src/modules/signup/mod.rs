@@ -1,4 +1,4 @@
-//! # SignUp Module
+//! # `SignUp` Module
 //! This module handles user signup functionality, including
 //! user registration, validation, and storage.
 
