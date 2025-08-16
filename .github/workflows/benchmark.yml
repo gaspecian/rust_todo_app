@@ -40,7 +40,7 @@ jobs:
         with:
           tool: 'cargo'
           output-file-path: target/criterion/report/index.html
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GH_TOKEN }}
           auto-push: true
 
   size-check:

@@ -17,12 +17,13 @@ CREATE INDEX IF NOT EXISTS idx_todos_completed ON todos(completed);
 CREATE INDEX IF NOT EXISTS idx_todos_created_at ON todos(created_at);
 
 -- Insert some sample data
-INSERT INTO todos (title, description, completed) VALUES
-    ('Setup Rust project', 'Initialize the Rust todo application with Axum', true),
-    ('Add PostgreSQL integration', 'Connect the app to PostgreSQL database', false),
-    ('Implement CRUD operations', 'Create endpoints for todo management', false),
-    ('Add authentication', 'Implement user authentication and authorization', false),
-    ('Write tests', 'Add comprehensive test coverage', false);
+-- INSERT INTO todos (title, description, completed) VALUES
+--     ('Setup Rust project', 'Initialize the Rust todo application with Axum', true),
+--     ('Add PostgreSQL integration', 'Connect the app to PostgreSQL database', false),
+--     ('Implement CRUD operations', 'Create endpoints for todo management', false),
+--     ('Add authentication', 'Implement user authentication and authorization', false),
+--     ('Write tests', 'Add comprehensive test coverage', false);
+
 
 -- Create a function to automatically update the updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -38,3 +39,24 @@ CREATE TRIGGER update_todos_updated_at
     BEFORE UPDATE ON todos 
     FOR EACH ROW 
     EXECUTE FUNCTION update_updated_at_column();
+
+
+CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+
+
+-- Create trigger to automatically update updated_at
+CREATE TRIGGER update_users_updated_at 
+    BEFORE UPDATE ON users 
+    FOR EACH ROW 
+    EXECUTE FUNCTION update_updated_at_column();
+
