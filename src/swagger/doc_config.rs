@@ -13,6 +13,10 @@ use crate::modules::signup::{
     interfaces::user_interfaces::{UserRequest, UserResponse},
     service as signup_service,
 };
+use crate::modules::login::{
+    interfaces::login_interfaces::{LoginRequest, LoginResponse},
+    service as login_service,
+};
 
 /// `OpenAPI` documentation configuration
 ///
@@ -28,16 +32,19 @@ use crate::modules::signup::{
     paths(
         service::health_check,
         service::ping,
-        signup_service::signup
+        signup_service::signup,
+        login_service::login
     ),
     components(
-        schemas(HealthResponse, PingResponse, UserRequest, UserResponse, ErrorResponse)
+        schemas(HealthResponse, PingResponse, UserRequest, UserResponse, LoginRequest, LoginResponse, ErrorResponse)
     ),
     tags(
         (name = "Health Check",
         description = "Endpoints related to health checks and basic functionality."),
         (name = "SignUp",
-        description = "User registration and signup endpoints.")
+        description = "User registration and signup endpoints."),
+        (name = "Login",
+        description = "User login endpoints.")
     )
 )]
 pub struct ApiDoc;
