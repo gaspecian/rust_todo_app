@@ -31,7 +31,7 @@ impl LoginService {
         Self { login_repository }
     }
 
-    pub async fn login(&self, login: LoginRequest, encoding_key: EncodingKey) -> Result<String, sqlx::Error> {
+    pub async fn login(&self, login: LoginRequest, encoding_key: EncodingKey, session_duration: i64) -> Result<String, sqlx::Error> {
         tracing::info!("Attempting to log in user: {}", login.username);
 
         let user = self.login_repository.fetch_by_username(&login.username).await?;
@@ -56,7 +56,7 @@ impl LoginService {
         let now = Utc::now();
         let claims = Claims {
             user_id: user.id as i64,
-            exp: (now + Duration::hours(1)).timestamp() as usize, // Token expires in 1 hour
+            exp: (now + Duration::minutes(session_duration)).timestamp() as usize, // Token expires in 1 hour
             iat: now.timestamp() as usize,
         };
 
@@ -92,12 +92,12 @@ pub async fn login(
     let login_repository = LoginRepository::new(app_state.db_pool);
     let login_service = LoginService::new(login_repository);
     
-    match login_service.login(login_request, app_state.encoding_key).await {
+    match login_service.login(login_request, app_state.encoding_key, app_state.session_duration_minutes).await {
         Ok(token) => (axum::http::StatusCode::OK, Json(LoginResponse {
             username: username, // Use the cloned username
             token: token.to_string(), // Replace with actual token generation logic
         })).into_response(),
-        Err(error) => (
+        Err(_error) => (
             axum::http::StatusCode::UNAUTHORIZED,
             Json(ErrorResponse {
                 message: "Login failed".to_string(),

@@ -33,6 +33,8 @@ pub struct AppState {
     pub encoding_key: EncodingKey,
     /// JWT decoding key
     pub decoding_key: DecodingKey,
+    /// Session duration in minutes
+    pub session_duration_minutes: i64,
 }
 
 /// Main application entry point
@@ -72,12 +74,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     });
     let encoding_key = EncodingKey::from_secret(jwt_secret.as_bytes());
     let decoding_key = DecodingKey::from_secret(jwt_secret.as_bytes());
+    let session_duration_minutes = std::env::var("SESSION_DURATION_MINUTES")
+        .ok()
+        .and_then(|v| v.parse::<i64>().ok())
+        .unwrap_or(60); // default to 60 minutes
 
     // Create application state
     let app_state = AppState { 
         db_pool: pool,
         encoding_key,
-        decoding_key
+        decoding_key,
+        session_duration_minutes,
     };
 
     // Build the application router
