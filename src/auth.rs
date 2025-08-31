@@ -13,7 +13,6 @@ use chrono::{ Utc };
 // Make the Claims struct public
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
-    pub exp: i64,
     pub iat: i64,
     pub user_id: i64,
 }

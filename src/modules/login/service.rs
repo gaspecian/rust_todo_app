@@ -32,8 +32,7 @@ impl LoginService {
     pub async fn login(
         &self,
         login: LoginRequest,
-        encoding_key: EncodingKey,
-        session_duration: i64,
+        encoding_key: EncodingKey
     ) -> Result<String, sqlx::Error> {
         tracing::info!("Attempting to log in user: {}", login.username);
 
@@ -60,7 +59,6 @@ impl LoginService {
         let now = Utc::now();
         let claims = Claims {
             user_id: i64::from(user.id),
-            exp: (now + Duration::minutes(session_duration)).timestamp(), // Token expires in 1 hour
             iat: now.timestamp(),
         };
 
@@ -99,8 +97,7 @@ pub async fn login(
     match login_service
         .login(
             login_request,
-            app_state.encoding_key,
-            app_state.session_duration_minutes,
+            app_state.encoding_key
         )
         .await
     {
