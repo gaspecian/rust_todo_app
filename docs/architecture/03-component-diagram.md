@@ -82,34 +82,37 @@ C4Component
 
 #### Signup Module  
 - **Location**: `src/modules/signup/`
+- **Architecture**: Routes → Service → Repository
 - **Responsibilities**:
   - User registration validation
   - Password strength requirements
   - Account creation workflow
 - **Endpoints**: `POST /signup`
-- **Dependencies**: Auth Service, Database Service
+- **Dependencies**: Auth Service, Repository Layer
 
 #### Login Module
 - **Location**: `src/modules/login/`
+- **Architecture**: Routes → Service → Repository
 - **Responsibilities**:
   - User authentication
   - Password verification
   - JWT token generation
 - **Endpoints**: `POST /login`
-- **Dependencies**: Auth Service, Database Service
+- **Dependencies**: Auth Service, Repository Layer
 
 #### Todo Module
-- **Location**: `src/modules/todo/` (planned)
+- **Status**: Not yet implemented
+- **Planned Location**: `src/modules/todo/`
+- **Planned Architecture**: Routes → Service → Repository
 - **Responsibilities**:
   - Todo item CRUD operations
   - User-specific todo filtering
   - Todo status management
-- **Endpoints**: 
+- **Planned Endpoints**: 
   - `GET /todos` - List todos
   - `POST /todos` - Create todo
   - `PUT /todos/{id}` - Update todo
   - `DELETE /todos/{id}` - Delete todo
-- **Dependencies**: Auth Service, Database Service
 
 ## Service Components
 
@@ -166,18 +169,28 @@ Error → Error Middleware → Structured Response → HTTP Client
 
 ## Module Structure
 
-Each business module follows a consistent structure:
+Each business module follows a layered architecture pattern:
 
 ```
 src/modules/{module_name}/
 ├── mod.rs           # Module exports and configuration
 ├── routes.rs        # HTTP route handlers
 ├── service.rs       # Business logic implementation
-└── interfaces/      # Data structures and DTOs
+├── interfaces/      # Data structures and DTOs
+│   ├── mod.rs
+│   ├── requests.rs  # Request DTOs
+│   └── responses.rs # Response DTOs
+└── repository/      # Data access layer
     ├── mod.rs
-    ├── requests.rs  # Request DTOs
-    └── responses.rs # Response DTOs
+    └── queries.rs   # Database queries
 ```
+
+### Architecture Layers
+
+1. **Routes Layer**: HTTP request handling and response formatting
+2. **Service Layer**: Business logic and validation
+3. **Repository Layer**: Data access and database operations
+4. **Interfaces Layer**: Shared data structures and DTOs
 
 ## Component Dependencies
 
@@ -186,12 +199,18 @@ src/modules/{module_name}/
 Router
 ├── Middleware Stack
 │   ├── Health Module → Database Service
-│   ├── Signup Module → Auth Service, Database Service
-│   ├── Login Module → Auth Service, Database Service
-│   └── Todo Module → Auth Service, Database Service
-├── Auth Service → Database Service
+│   ├── Signup Module → Auth Service → Repository Layer
+│   ├── Login Module → Auth Service → Repository Layer
+│   └── Todo Module → Auth Service → Repository Layer (planned)
+├── Auth Service → Repository Layer
 └── OpenAPI Documentation
 ```
+
+### Current Implementation Status
+- ✅ **Health Module**: Fully implemented
+- ✅ **Signup Module**: Implemented with repository layer
+- ✅ **Login Module**: Implemented with repository layer  
+- ⏳ **Todo Module**: Planned implementation
 
 ### Shared Dependencies
 - **Serde**: JSON serialization across all modules

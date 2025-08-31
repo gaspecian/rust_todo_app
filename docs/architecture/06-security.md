@@ -106,19 +106,18 @@ pub fn hash_password(password: &str) -> Result<String, argon2::Error> {
     "typ": "JWT"
   },
   "payload": {
-    "sub": "user_id",
-    "username": "john_doe",
-    "exp": 1693497867,
-    "iat": 1693494267
+    "iat": 1693494267,
+    "user_id": 12345
   }
 }
 ```
 
 **Security Features**:
-- **Expiration**: Configurable session timeout
+- **Session Management**: Time-based expiration using `iat` + session duration
 - **Signing**: HMAC-SHA256 with secret key
-- **Claims**: Minimal user information
+- **Claims**: Minimal user information (only user_id and issued_at)
 - **Stateless**: No server-side session storage
+- **Automatic Extraction**: Built-in Axum extractor for request validation
 
 ## Authorization Framework
 
@@ -127,44 +126,62 @@ pub fn hash_password(password: &str) -> Result<String, argon2::Error> {
 ```rust
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
-    pub sub: String,        // User ID
-    pub username: String,   // Username
-    pub roles: Vec<String>, // User roles
-    pub exp: i64,          // Expiration timestamp
+    pub iat: i64,      // Issued at timestamp
+    pub user_id: i64,  // User identifier
 }
 
-// Authorization middleware
-pub async fn auth_middleware(
-    headers: HeaderMap,
-    mut request: Request<Body>,
-    next: Next<Body>,
-) -> Result<Response, StatusCode> {
-    let token = extract_bearer_token(&headers)?;
-    let claims = validate_token(&token)?;
-    
-    // Inject user context into request
-    request.extensions_mut().insert(UserContext::from(claims));
-    
-    Ok(next.run(request).await)
+// Automatic token extraction and validation
+impl FromRequestParts<AppState> for Claims {
+    type Rejection = StatusCode;
+
+    async fn from_request_parts(
+        parts: &mut Parts,
+        state: &AppState,
+    ) -> Result<Self, Self::Rejection> {
+        let session_duration = state.session_duration_minutes;
+        
+        // Extract Bearer token from Authorization header
+        let TypedHeader(Authorization(bearer)) = parts
+            .extract::<TypedHeader<Authorization<Bearer>>>()
+            .await
+            .map_err(|_| StatusCode::UNAUTHORIZED)?;
+
+        // Decode and validate JWT token
+        let token_data = decode::<Self>(
+            bearer.token(),
+            &state.decoding_key,
+            &Validation::new(Algorithm::HS256),
+        )
+        .map_err(|_| StatusCode::UNAUTHORIZED)?;
+
+        // Check session expiration
+        if token_data.claims.iat + (session_duration * 60) < Utc::now().timestamp() {
+            return Err(StatusCode::UNAUTHORIZED);
+        }
+
+        Ok(token_data.claims)
+    }
 }
 ```
 
 ### Resource-Level Authorization
 
 ```rust
-// Todo ownership validation
+// Automatic user context extraction in handlers
 pub async fn get_user_todos(
-    user_context: UserContext,
-    pool: &Pool<Postgres>
-) -> Result<Vec<Todo>, ServiceError> {
-    sqlx::query_as!(
+    claims: Claims,  // Automatically extracted and validated
+    State(app_state): State<AppState>,
+) -> Result<Json<Vec<Todo>>, StatusCode> {
+    let todos = sqlx::query_as!(
         Todo,
         "SELECT * FROM todos WHERE user_id = $1",
-        user_context.user_id
+        claims.user_id
     )
-    .fetch_all(pool)
+    .fetch_all(&app_state.db_pool)
     .await
-    .map_err(ServiceError::DatabaseError)
+    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    
+    Ok(Json(todos))
 }
 ```
 
@@ -406,7 +423,7 @@ spec:
 
 ```rust
 // Audit logging for security events
-pub fn log_security_event(event_type: &str, user_id: Option<&str>, details: &str) {
+pub fn log_security_event(event_type: &str, user_id: Option<i64>, details: &str) {
     tracing::warn!(
         event_type = event_type,
         user_id = user_id,
@@ -417,8 +434,9 @@ pub fn log_security_event(event_type: &str, user_id: Option<&str>, details: &str
 }
 
 // Usage examples
-log_security_event("failed_login", Some(&username), "Invalid password");
+log_security_event("failed_login", None, "Invalid password");
 log_security_event("token_validation_failed", None, "Malformed JWT token");
+log_security_event("session_expired", Some(user_id), "Token expired");
 ```
 
 ### Rate Limiting
@@ -457,20 +475,37 @@ notice = "warn"
 
 ### Security Testing
 
-**Automated Security Tests**:
+### Automated Security Tests**:
 ```rust
-#[tokio::test]
-async fn test_sql_injection_protection() {
-    let malicious_input = "'; DROP TABLE users; --";
-    let result = get_user_by_username(malicious_input, &pool).await;
-    assert!(result.is_err()); // Should safely handle malicious input
-}
-
 #[tokio::test]
 async fn test_jwt_token_validation() {
     let invalid_token = "invalid.jwt.token";
     let result = validate_token(invalid_token, &decoding_key);
     assert!(result.is_err()); // Should reject invalid tokens
+}
+
+#[tokio::test]
+async fn test_session_expiration() {
+    let expired_claims = Claims {
+        iat: Utc::now().timestamp() - 7200, // 2 hours ago
+        user_id: 123,
+    };
+    
+    // Test that expired tokens are rejected
+    let result = validate_session(&expired_claims, 60); // 60 minute session
+    assert!(result.is_err());
+}
+
+#[tokio::test]
+async fn test_user_isolation() {
+    let user1_claims = Claims { iat: Utc::now().timestamp(), user_id: 1 };
+    let user2_claims = Claims { iat: Utc::now().timestamp(), user_id: 2 };
+    
+    // Ensure users can only access their own data
+    let user1_todos = get_user_todos(user1_claims, &app_state).await.unwrap();
+    let user2_todos = get_user_todos(user2_claims, &app_state).await.unwrap();
+    
+    assert_ne!(user1_todos, user2_todos);
 }
 ```
 

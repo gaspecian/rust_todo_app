@@ -148,13 +148,14 @@ pub struct Claims {
 
 ### Module Structure Pattern
 
-Each module follows this implementation pattern:
+Each module follows this layered implementation pattern:
 
 #### Module Definition (`mod.rs`)
 ```rust
 pub mod routes;
 pub mod service;
 pub mod interfaces;
+pub mod repository;
 
 pub use routes::*;
 ```
@@ -176,8 +177,31 @@ async fn handler_function(
 ```rust
 pub async fn business_operation(
     request: RequestDto,
-    pool: &Pool<Postgres>
+    repository: &impl UserRepository
 ) -> Result<ResponseDto, ServiceError>
+```
+
+#### Repository Layer (`repository/`)
+```rust
+#[async_trait]
+pub trait UserRepository {
+    async fn create_user(&self, user: CreateUserRequest) -> Result<User, RepositoryError>;
+    async fn find_by_username(&self, username: &str) -> Result<Option<User>, RepositoryError>;
+}
+
+pub struct PostgresUserRepository {
+    pool: Pool<Postgres>,
+}
+
+#[async_trait]
+impl UserRepository for PostgresUserRepository {
+    async fn create_user(&self, user: CreateUserRequest) -> Result<User, RepositoryError> {
+        sqlx::query_as!(/* ... */)
+            .fetch_one(&self.pool)
+            .await
+            .map_err(RepositoryError::Database)
+    }
+}
 ```
 
 #### Data Transfer Objects (`interfaces/`)
@@ -195,9 +219,23 @@ pub struct ResponseDto {
 
 ## Key Design Patterns
 
+## Key Design Patterns
+
+### Repository Pattern
+- **Abstraction**: Trait-based repository interfaces
+- **Implementation**: PostgreSQL-specific implementations
+- **Testing**: Mock repositories for unit testing
+- **Dependency Injection**: Repository traits injected into services
+
+### Layered Architecture Pattern
+- **Routes Layer**: HTTP concerns and serialization
+- **Service Layer**: Business logic and validation
+- **Repository Layer**: Data access abstraction
+- **Clear Separation**: Each layer has distinct responsibilities
+
 ### State Management Pattern
 - **AppState**: Shared application state using Axum's state extraction
-- **Dependency Injection**: Services injected via state
+- **Dependency Injection**: Services and repositories injected via state
 - **Resource Pooling**: Database connections managed centrally
 
 ### Error Handling Pattern
