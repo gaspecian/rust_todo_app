@@ -42,6 +42,10 @@ impl FromRequestParts<AppState> for Claims {
       )
       .map_err(|_| StatusCode::UNAUTHORIZED)?;
 
+      if token_data.claims.exp < chrono::Utc::now().timestamp() as usize {
+        return Err(StatusCode::UNAUTHORIZED);
+      }
+
       Ok(token_data.claims)
     }
 }
