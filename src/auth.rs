@@ -8,7 +8,7 @@ use axum_extra::{extract::TypedHeader, headers::authorization::Bearer, headers::
 use jsonwebtoken::{decode, Algorithm, Validation};
 use serde::{Deserialize, Serialize};
 
-use chrono::{ Utc };
+use chrono::Utc;
 
 // Make the Claims struct public
 #[derive(Debug, Serialize, Deserialize)]
@@ -24,7 +24,6 @@ impl FromRequestParts<AppState> for Claims {
         parts: &mut Parts,
         state: &AppState,
     ) -> Result<Self, Self::Rejection> {
-
         let session_duration = state.session_duration_minutes;
         // Extract the token from the authorization header
         let TypedHeader(Authorization(bearer)) = parts

@@ -17,7 +17,7 @@ use argon2::{
 };
 
 use axum::{extract::State, response::IntoResponse, Json};
-use chrono::{Duration, Utc};
+use chrono::Utc;
 use jsonwebtoken::{encode, EncodingKey, Header};
 
 pub struct LoginService {
@@ -32,7 +32,7 @@ impl LoginService {
     pub async fn login(
         &self,
         login: LoginRequest,
-        encoding_key: EncodingKey
+        encoding_key: EncodingKey,
     ) -> Result<String, sqlx::Error> {
         tracing::info!("Attempting to log in user: {}", login.username);
 
@@ -95,10 +95,7 @@ pub async fn login(
     let login_service = LoginService::new(login_repository);
 
     match login_service
-        .login(
-            login_request,
-            app_state.encoding_key
-        )
+        .login(login_request, app_state.encoding_key)
         .await
     {
         Ok(token) => (
