@@ -2,12 +2,19 @@
 //!
 //! This module configures the `OpenAPI` documentation for the application.
 
-use utoipa::OpenApi;
+use utoipa::{
+    openapi::security::{ApiKey, ApiKeyValue, SecurityScheme},
+    Modify, OpenApi,
+};
 
 use crate::modules::common::ErrorResponse;
 use crate::modules::health::{
     interfaces::health_response::{HealthResponse, PingResponse},
     service,
+};
+use crate::modules::login::{
+    interfaces::login_interfaces::{LoginRequest, LoginResponse},
+    service as login_service,
 };
 use crate::modules::signup::{
     interfaces::user_interfaces::{UserRequest, UserResponse},
@@ -28,16 +35,39 @@ use crate::modules::signup::{
     paths(
         service::health_check,
         service::ping,
-        signup_service::signup
+        service::test_login,
+        signup_service::signup,
+        login_service::login
     ),
     components(
-        schemas(HealthResponse, PingResponse, UserRequest, UserResponse, ErrorResponse)
+        schemas(HealthResponse, PingResponse, UserRequest, UserResponse, LoginRequest, LoginResponse, ErrorResponse)
     ),
+    security(
+        ("bearer_auth" = [])
+    ),
+    modifiers(&SecurityAddon),
     tags(
         (name = "Health Check",
         description = "Endpoints related to health checks and basic functionality."),
         (name = "SignUp",
-        description = "User registration and signup endpoints.")
+        description = "User registration and signup endpoints."),
+        (name = "Login",
+        description = "User login endpoints.")
     )
 )]
 pub struct ApiDoc;
+
+struct SecurityAddon;
+
+impl Modify for SecurityAddon {
+    fn modify(&self, openapi: &mut utoipa::openapi::OpenApi) {
+        if let Some(components) = openapi.components.as_mut() {
+            components.add_security_scheme(
+                "jwt_auth",
+                SecurityScheme::ApiKey(ApiKey::Header(ApiKeyValue::new("Authorization"))),
+            );
+        } else {
+            tracing::warn!("No components registered in OpenAPI spec when adding security scheme.");
+        }
+    }
+}

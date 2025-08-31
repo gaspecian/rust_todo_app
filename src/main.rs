@@ -6,6 +6,7 @@
 
 use axum::Router;
 use dotenvy::dotenv;
+use jsonwebtoken::{DecodingKey, EncodingKey};
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{Pool, Postgres};
 use utoipa::OpenApi;
@@ -15,9 +16,11 @@ mod swagger {
     pub mod doc_config;
 }
 
+mod auth;
 mod modules;
 
 use modules::health::health_routes;
+use modules::login::login_routes;
 use modules::signup::signup_routes;
 use swagger::doc_config::ApiDoc;
 
@@ -26,6 +29,12 @@ use swagger::doc_config::ApiDoc;
 pub struct AppState {
     /// Database connection pool
     pub db_pool: Pool<Postgres>,
+    /// JWT encoding key
+    pub encoding_key: EncodingKey,
+    /// JWT decoding key
+    pub decoding_key: DecodingKey,
+    /// Session duration in minutes
+    pub session_duration_minutes: i64,
 }
 
 /// Main application entry point
@@ -58,14 +67,32 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let port = std::env::var("PORT").unwrap_or_else(|_| "8000".to_string());
     let addr = format!("{address}:{port}");
 
+    // Get JWT secret from environment
+    let jwt_secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| {
+        tracing::warn!("JWT_SECRET not set, using default secret");
+        "my_secret_key".to_string()
+    });
+    let encoding_key = EncodingKey::from_secret(jwt_secret.as_bytes());
+    let decoding_key = DecodingKey::from_secret(jwt_secret.as_bytes());
+    let session_duration_minutes = std::env::var("SESSION_DURATION_MINUTES")
+        .ok()
+        .and_then(|v| v.parse::<i64>().ok())
+        .unwrap_or(60); // default to 60 minutes
+
     // Create application state
-    let app_state = AppState { db_pool: pool };
+    let app_state = AppState {
+        db_pool: pool,
+        encoding_key,
+        decoding_key,
+        session_duration_minutes,
+    };
 
     // Build the application router
     let app = Router::new()
         .merge(SwaggerUi::new("/swagger-ui").url("/api-doc/openapi.json", ApiDoc::openapi()))
         .merge(health_routes())
         .merge(signup_routes())
+        .merge(login_routes())
         .with_state(app_state);
 
     // Create TCP listener
