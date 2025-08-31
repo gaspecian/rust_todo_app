@@ -2,7 +2,11 @@
 //!
 //! This module configures the `OpenAPI` documentation for the application.
 
-use utoipa::OpenApi;
+use utoipa::{
+    OpenApi,
+    openapi::security::{SecurityScheme, ApiKey, ApiKeyValue},
+    Modify,
+};
 
 use crate::modules::common::ErrorResponse;
 use crate::modules::health::{
@@ -32,12 +36,17 @@ use crate::modules::login::{
     paths(
         service::health_check,
         service::ping,
+        service::test_login,
         signup_service::signup,
         login_service::login
     ),
     components(
         schemas(HealthResponse, PingResponse, UserRequest, UserResponse, LoginRequest, LoginResponse, ErrorResponse)
     ),
+    security(
+        ("bearer_auth" = [])
+    ),
+    modifiers(&SecurityAddon),
     tags(
         (name = "Health Check",
         description = "Endpoints related to health checks and basic functionality."),
@@ -48,3 +57,16 @@ use crate::modules::login::{
     )
 )]
 pub struct ApiDoc;
+
+
+struct SecurityAddon;
+
+    impl Modify for SecurityAddon {
+        fn modify(&self, openapi: &mut utoipa::openapi::OpenApi) {
+            let components = openapi.components.as_mut().unwrap(); // we can unwrap safely since there already is components registered.
+            components.add_security_scheme(
+                "jwt_auth",
+                SecurityScheme::ApiKey(ApiKey::Header(ApiKeyValue::new("Authorization"))),
+            )
+        }
+    }

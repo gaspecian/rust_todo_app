@@ -4,11 +4,12 @@
 use crate::modules::login::{
     interfaces::login_interfaces::{
         LoginRequest, 
-        LoginResponse,
-        Claims
+        LoginResponse
     }, 
     repository::login_repository::LoginRepository
 };
+
+use crate::auth::Claims;
 
 use crate::modules::common::ErrorResponse;
 use crate::AppState;

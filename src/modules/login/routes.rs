@@ -7,5 +7,6 @@ use crate::modules::login::service::login;
 use crate::AppState;
 
 pub fn login_routes() -> Router<AppState> {
-    Router::new().route("/login", post(login))
+    Router::new()
+        .route("/login", post(login))
 }

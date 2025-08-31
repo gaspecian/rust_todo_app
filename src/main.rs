@@ -17,6 +17,7 @@ mod swagger {
 }
 
 mod modules;
+mod auth;
 
 use modules::health::health_routes;
 use modules::signup::signup_routes;
