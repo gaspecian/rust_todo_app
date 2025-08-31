@@ -28,15 +28,11 @@ impl FromRequestParts<AppState> for Claims {
         state: &AppState,
     ) -> Result<Self, Self::Rejection> {
 
-      tracing::info!("Extracting Claims from request parts");
-
       // Extract the token from the authorization header
       let TypedHeader(Authorization(bearer)) = parts
         .extract::<TypedHeader<Authorization<Bearer>>>()
         .await
         .map_err(|_| StatusCode::UNAUTHORIZED)?;
-
-      tracing::info!("Bearer token extracted: {}", bearer.token());
 
       // Decode the user data
       let token_data = decode::<Claims>(
@@ -45,10 +41,6 @@ impl FromRequestParts<AppState> for Claims {
         &Validation::new(Algorithm::HS256),
       )
       .map_err(|_| StatusCode::UNAUTHORIZED)?;
-
-      tracing::info!("Token decoded successfully");
-
-      tracing::info!("Token decoded successfully: {:?}", token_data.claims);
 
       Ok(token_data.claims)
     }

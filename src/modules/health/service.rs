@@ -5,10 +5,6 @@
 use axum::{extract::State, response::IntoResponse, Json};
 use chrono;
 
-use utoipa::openapi::{
-    Header
-};
-
 use crate::{
     auth::Claims, modules::health::interfaces::health_response::{HealthResponse, PingResponse}, AppState
 };
@@ -73,9 +69,6 @@ pub async fn ping(State(state): State<AppState>) -> impl IntoResponse {
     get,
     path = "/test_login",
     tag = "Health Check",
-    // params(
-    //     ("Authorization" = String, Header, description = "Bearer token for authentication")
-    // ),
     responses(
         (status = 200, description = "Ping successful", body = PingResponse)
     ),
