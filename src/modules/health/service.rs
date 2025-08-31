@@ -6,7 +6,9 @@ use axum::{extract::State, response::IntoResponse, Json};
 use chrono;
 
 use crate::{
-    auth::Claims, modules::health::interfaces::health_response::{HealthResponse, PingResponse}, AppState
+    auth::Claims,
+    modules::health::interfaces::health_response::{HealthResponse, PingResponse},
+    AppState,
 };
 
 /// Health check endpoint handler

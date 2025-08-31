@@ -10,6 +10,5 @@ use crate::AppState;
 /// This function sets up all signup-related HTTP routes and returns
 /// a configured Router that can be merged
 pub fn signup_routes() -> Router<AppState> {
-    Router::new()
-        .route("/signup", post(signup))
+    Router::new().route("/signup", post(signup))
 }

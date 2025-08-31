@@ -3,9 +3,8 @@
 //! This module configures the `OpenAPI` documentation for the application.
 
 use utoipa::{
-    OpenApi,
-    openapi::security::{SecurityScheme, ApiKey, ApiKeyValue},
-    Modify,
+    openapi::security::{ApiKey, ApiKeyValue, SecurityScheme},
+    Modify, OpenApi,
 };
 
 use crate::modules::common::ErrorResponse;
@@ -13,13 +12,13 @@ use crate::modules::health::{
     interfaces::health_response::{HealthResponse, PingResponse},
     service,
 };
-use crate::modules::signup::{
-    interfaces::user_interfaces::{UserRequest, UserResponse},
-    service as signup_service,
-};
 use crate::modules::login::{
     interfaces::login_interfaces::{LoginRequest, LoginResponse},
     service as login_service,
+};
+use crate::modules::signup::{
+    interfaces::user_interfaces::{UserRequest, UserResponse},
+    service as signup_service,
 };
 
 /// `OpenAPI` documentation configuration
@@ -58,15 +57,17 @@ use crate::modules::login::{
 )]
 pub struct ApiDoc;
 
-
 struct SecurityAddon;
 
-    impl Modify for SecurityAddon {
-        fn modify(&self, openapi: &mut utoipa::openapi::OpenApi) {
-            let components = openapi.components.as_mut().unwrap(); // we can unwrap safely since there already is components registered.
+impl Modify for SecurityAddon {
+    fn modify(&self, openapi: &mut utoipa::openapi::OpenApi) {
+        if let Some(components) = openapi.components.as_mut() {
             components.add_security_scheme(
                 "jwt_auth",
                 SecurityScheme::ApiKey(ApiKey::Header(ApiKeyValue::new("Authorization"))),
-            )
+            );
+        } else {
+            tracing::warn!("No components registered in OpenAPI spec when adding security scheme.");
         }
     }
+}

@@ -2,11 +2,8 @@
 //!//! This module contains the business logic for user login operations.
 
 use crate::modules::login::{
-    interfaces::login_interfaces::{
-        LoginRequest, 
-        LoginResponse
-    }, 
-    repository::login_repository::LoginRepository
+    interfaces::login_interfaces::{LoginRequest, LoginResponse},
+    repository::login_repository::LoginRepository,
 };
 
 use crate::auth::Claims;
@@ -14,12 +11,13 @@ use crate::auth::Claims;
 use crate::modules::common::ErrorResponse;
 use crate::AppState;
 
-use argon2::{Argon2, password_hash};
-
-use axum::{
-    extract::State, response::IntoResponse, Json
+use argon2::{
+    password_hash::{PasswordHash, PasswordVerifier},
+    Argon2,
 };
-use chrono::{Utc, Duration};
+
+use axum::{extract::State, response::IntoResponse, Json};
+use chrono::{Duration, Utc};
 use jsonwebtoken::{encode, EncodingKey, Header};
 
 pub struct LoginService {
@@ -27,19 +25,25 @@ pub struct LoginService {
 }
 
 impl LoginService {
-    pub fn new(login_repository: LoginRepository) -> Self {
+    pub const fn new(login_repository: LoginRepository) -> Self {
         Self { login_repository }
     }
 
-    pub async fn login(&self, login: LoginRequest, encoding_key: EncodingKey, session_duration: i64) -> Result<String, sqlx::Error> {
+    pub async fn login(
+        &self,
+        login: LoginRequest,
+        encoding_key: EncodingKey,
+        session_duration: i64,
+    ) -> Result<String, sqlx::Error> {
         tracing::info!("Attempting to log in user: {}", login.username);
 
-        let user = self.login_repository.fetch_by_username(&login.username).await?;
+        let user = self
+            .login_repository
+            .fetch_by_username(&login.username)
+            .await?;
 
-        use password_hash::{PasswordHash, PasswordVerifier as _};
-
-        let parsed_hash = PasswordHash::new(&user.password)
-            .map_err(|e| sqlx::Error::ColumnDecode {
+        let parsed_hash =
+            PasswordHash::new(&user.password).map_err(|e| sqlx::Error::ColumnDecode {
                 index: "password".into(),
                 source: Box::new(e),
             })?;
@@ -55,21 +59,21 @@ impl LoginService {
 
         let now = Utc::now();
         let claims = Claims {
-            user_id: user.id as i64,
-            exp: (now + Duration::minutes(session_duration)).timestamp() as usize, // Token expires in 1 hour
-            iat: now.timestamp() as usize,
+            user_id: i64::from(user.id),
+            exp: (now + Duration::minutes(session_duration)).timestamp(), // Token expires in 1 hour
+            iat: now.timestamp(),
         };
 
-        let token = encode(&Header::default(), &claims, &encoding_key)
-            .map_err(|e| sqlx::Error::ColumnDecode {
+        let token = encode(&Header::default(), &claims, &encoding_key).map_err(|e| {
+            sqlx::Error::ColumnDecode {
                 index: "token".into(),
                 source: Box::new(e),
-            })?;
+            }
+        })?;
 
         Ok(token)
     }
 }
-
 
 /// Handler function for the signup route
 #[utoipa::path(
@@ -91,17 +95,29 @@ pub async fn login(
     let username = login_request.username.clone();
     let login_repository = LoginRepository::new(app_state.db_pool);
     let login_service = LoginService::new(login_repository);
-    
-    match login_service.login(login_request, app_state.encoding_key, app_state.session_duration_minutes).await {
-        Ok(token) => (axum::http::StatusCode::OK, Json(LoginResponse {
-            username: username, // Use the cloned username
-            token: token.to_string(), // Replace with actual token generation logic
-        })).into_response(),
+
+    match login_service
+        .login(
+            login_request,
+            app_state.encoding_key,
+            app_state.session_duration_minutes,
+        )
+        .await
+    {
+        Ok(token) => (
+            axum::http::StatusCode::OK,
+            Json(LoginResponse {
+                username, // Use the cloned username
+                token,    // Replace with actual token generation logic
+            }),
+        )
+            .into_response(),
         Err(_error) => (
             axum::http::StatusCode::UNAUTHORIZED,
             Json(ErrorResponse {
                 message: "Login failed".to_string(),
             }),
-        ).into_response(),
+        )
+            .into_response(),
     }
 }

@@ -6,7 +6,7 @@
 
 use axum::Router;
 use dotenvy::dotenv;
-use jsonwebtoken::{ DecodingKey, EncodingKey };
+use jsonwebtoken::{DecodingKey, EncodingKey};
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{Pool, Postgres};
 use utoipa::OpenApi;
@@ -16,12 +16,12 @@ mod swagger {
     pub mod doc_config;
 }
 
-mod modules;
 mod auth;
+mod modules;
 
 use modules::health::health_routes;
-use modules::signup::signup_routes;
 use modules::login::login_routes;
+use modules::signup::signup_routes;
 use swagger::doc_config::ApiDoc;
 
 /// Application state containing shared resources
@@ -80,7 +80,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .unwrap_or(60); // default to 60 minutes
 
     // Create application state
-    let app_state = AppState { 
+    let app_state = AppState {
         db_pool: pool,
         encoding_key,
         decoding_key,

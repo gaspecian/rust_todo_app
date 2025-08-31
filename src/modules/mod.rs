@@ -5,5 +5,5 @@
 
 pub mod common;
 pub mod health;
-pub mod signup;
 pub mod login;
+pub mod signup;

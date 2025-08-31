@@ -1,22 +1,18 @@
 use crate::AppState; // Import AppState from the crate root
 use axum::{
-    extract::{FromRequestParts},
+    extract::FromRequestParts,
     http::{request::Parts, StatusCode},
     RequestPartsExt,
 };
-use axum_extra::{
-  extract::TypedHeader,
-  headers::authorization::Bearer,
-  headers::Authorization
-};
-use jsonwebtoken::{decode, Validation, Algorithm};
+use axum_extra::{extract::TypedHeader, headers::authorization::Bearer, headers::Authorization};
+use jsonwebtoken::{decode, Algorithm, Validation};
 use serde::{Deserialize, Serialize};
 
 // Make the Claims struct public
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
-    pub exp: usize,
-    pub iat: usize,
+    pub exp: i64,
+    pub iat: i64,
     pub user_id: i64,
 }
 
@@ -27,25 +23,24 @@ impl FromRequestParts<AppState> for Claims {
         parts: &mut Parts,
         state: &AppState,
     ) -> Result<Self, Self::Rejection> {
+        // Extract the token from the authorization header
+        let TypedHeader(Authorization(bearer)) = parts
+            .extract::<TypedHeader<Authorization<Bearer>>>()
+            .await
+            .map_err(|_| StatusCode::UNAUTHORIZED)?;
 
-      // Extract the token from the authorization header
-      let TypedHeader(Authorization(bearer)) = parts
-        .extract::<TypedHeader<Authorization<Bearer>>>()
-        .await
+        // Decode the user data
+        let token_data = decode::<Self>(
+            bearer.token(),
+            &state.decoding_key,
+            &Validation::new(Algorithm::HS256),
+        )
         .map_err(|_| StatusCode::UNAUTHORIZED)?;
 
-      // Decode the user data
-      let token_data = decode::<Claims>(
-        bearer.token(),
-        &state.decoding_key,
-        &Validation::new(Algorithm::HS256),
-      )
-      .map_err(|_| StatusCode::UNAUTHORIZED)?;
+        if token_data.claims.exp < chrono::Utc::now().timestamp() {
+            return Err(StatusCode::UNAUTHORIZED);
+        }
 
-      if token_data.claims.exp < chrono::Utc::now().timestamp() as usize {
-        return Err(StatusCode::UNAUTHORIZED);
-      }
-
-      Ok(token_data.claims)
+        Ok(token_data.claims)
     }
 }

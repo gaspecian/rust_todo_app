@@ -1,10 +1,9 @@
 //! # `Login` Repository
 //! This module defines the login repository interface for the login process.
 
-use sqlx::{Pool, Postgres, Error};
+use sqlx::{Error, Pool, Postgres};
 
 use crate::modules::signup::interfaces::user_interfaces::UserInterface;
-
 
 pub struct LoginRepository {
     pool: Pool<Postgres>,
