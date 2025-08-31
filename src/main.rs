@@ -6,6 +6,7 @@
 
 use axum::Router;
 use dotenvy::dotenv;
+use jsonwebtoken::{ DecodingKey, EncodingKey };
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{Pool, Postgres};
 use utoipa::OpenApi;
@@ -27,6 +28,10 @@ use swagger::doc_config::ApiDoc;
 pub struct AppState {
     /// Database connection pool
     pub db_pool: Pool<Postgres>,
+    /// JWT encoding key
+    pub encoding_key: EncodingKey,
+    /// JWT decoding key
+    pub decoding_key: DecodingKey,
 }
 
 /// Main application entry point
@@ -59,8 +64,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let port = std::env::var("PORT").unwrap_or_else(|_| "8000".to_string());
     let addr = format!("{address}:{port}");
 
+    // Get JWT secret from environment
+    let jwt_secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| {
+        tracing::warn!("JWT_SECRET not set, using default secret");
+        "my_secret_key".to_string()
+    });
+    let encoding_key = EncodingKey::from_secret(jwt_secret.as_bytes());
+    let decoding_key = DecodingKey::from_secret(jwt_secret.as_bytes());
+
     // Create application state
-    let app_state = AppState { db_pool: pool };
+    let app_state = AppState { 
+        db_pool: pool,
+        encoding_key,
+        decoding_key
+    };
 
     // Build the application router
     let app = Router::new()
