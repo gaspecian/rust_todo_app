@@ -37,3 +37,5 @@ The C4 model provides a hierarchical way to describe software architecture throu
 - **API-First**: OpenAPI specification drives development
 - **Security by Design**: Built-in authentication and authorization
 - **Container Native**: Docker-first deployment strategy
+- **Layered Architecture**: Clear separation between routes, services, and repositories
+- **Repository Pattern**: Abstracted data access for testability and maintainability

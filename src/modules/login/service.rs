@@ -17,7 +17,7 @@ use argon2::{
 };
 
 use axum::{extract::State, response::IntoResponse, Json};
-use chrono::{Duration, Utc};
+use chrono::Utc;
 use jsonwebtoken::{encode, EncodingKey, Header};
 
 pub struct LoginService {
@@ -33,7 +33,6 @@ impl LoginService {
         &self,
         login: LoginRequest,
         encoding_key: EncodingKey,
-        session_duration: i64,
     ) -> Result<String, sqlx::Error> {
         tracing::info!("Attempting to log in user: {}", login.username);
 
@@ -60,7 +59,6 @@ impl LoginService {
         let now = Utc::now();
         let claims = Claims {
             user_id: i64::from(user.id),
-            exp: (now + Duration::minutes(session_duration)).timestamp(), // Token expires in 1 hour
             iat: now.timestamp(),
         };
 
@@ -97,11 +95,7 @@ pub async fn login(
     let login_service = LoginService::new(login_repository);
 
     match login_service
-        .login(
-            login_request,
-            app_state.encoding_key,
-            app_state.session_duration_minutes,
-        )
+        .login(login_request, app_state.encoding_key)
         .await
     {
         Ok(token) => (
