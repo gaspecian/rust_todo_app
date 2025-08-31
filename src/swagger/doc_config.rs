@@ -17,7 +17,7 @@ use crate::modules::login::{
     service as login_service,
 };
 use crate::modules::signup::{
-    interfaces::user_interfaces::{UserRequest, UserResponse},
+    interfaces::signup_interfaces::{SignUpRequest, SignUpResponse},
     service as signup_service,
 };
 
@@ -40,7 +40,7 @@ use crate::modules::signup::{
         login_service::login
     ),
     components(
-        schemas(HealthResponse, PingResponse, UserRequest, UserResponse, LoginRequest, LoginResponse, ErrorResponse)
+        schemas(HealthResponse, PingResponse, SignUpRequest, SignUpResponse, LoginRequest, LoginResponse, ErrorResponse)
     ),
     security(
         ("bearer_auth" = [])

@@ -3,7 +3,7 @@
 
 use sqlx::{Error, Pool, Postgres};
 
-use crate::modules::signup::interfaces::user_interfaces::UserInterface;
+use crate::modules::signup::interfaces::signup_interfaces::SignUpInterface;
 
 pub struct LoginRepository {
     pool: Pool<Postgres>,
@@ -16,9 +16,9 @@ impl LoginRepository {
     }
 
     // Method that fetches a user by username
-    pub async fn fetch_by_username(&self, username: &str) -> Result<UserInterface, Error> {
+    pub async fn fetch_by_username(&self, username: &str) -> Result<SignUpInterface, Error> {
         let user = sqlx::query_as!(
-            UserInterface,
+            SignUpInterface,
             "SELECT id, username, email, password, created_at, updated_at FROM users WHERE username = $1",
             username
         )

@@ -2,11 +2,11 @@ use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 use utoipa::ToSchema;
 
-// User structure for the signup module
+// SignUp structure for the signup module
 
-// This module defines the user interface for the signup process.
+// This module defines the signup interface for the signup process.
 #[derive(Serialize, Deserialize, ToSchema, Clone)]
-pub struct UserRequest {
+pub struct SignUpRequest {
     pub username: String,
     pub email: String,
     pub password: String,
@@ -14,7 +14,7 @@ pub struct UserRequest {
 }
 
 #[derive(Serialize, Deserialize, ToSchema, Clone)]
-pub struct UserInterface {
+pub struct SignUpInterface {
     pub id: i32,
     pub username: String,
     pub email: String,
@@ -24,7 +24,7 @@ pub struct UserInterface {
 }
 
 #[derive(Serialize, Deserialize, ToSchema, Clone)]
-pub struct NewUserInterface {
+pub struct NewSignUpInterface {
     pub username: String,
     pub email: String,
     pub password: String,
@@ -33,7 +33,7 @@ pub struct NewUserInterface {
 }
 
 #[derive(Serialize, Deserialize, ToSchema, Clone)]
-pub struct UserResponse {
+pub struct SignUpResponse {
     pub id: String,
     pub username: String,
 }

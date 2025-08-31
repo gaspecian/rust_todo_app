@@ -11,33 +11,33 @@ use argon2::{
 use axum::{extract::State, response::IntoResponse, Json};
 
 use crate::modules::common::ErrorResponse;
-use crate::modules::signup::interfaces::user_interfaces::{
-    NewUserInterface, UserRequest, UserResponse,
+use crate::modules::signup::interfaces::signup_interfaces::{
+    NewSignUpInterface, SignUpRequest, SignUpResponse,
 };
-use crate::modules::signup::repository::user_repository::UserRepository;
+use crate::modules::signup::repository::signup_repository::SignUpRepository;
 use crate::AppState;
 
 pub struct SignUpService {
-    user_repository: UserRepository,
+    signup_repository: SignUpRepository,
 }
 
 impl SignUpService {
     // Constructor to create a new SignUpService instance
-    pub const fn new(user_repository: UserRepository) -> Self {
-        Self { user_repository }
+    pub const fn new(signup_repository: SignUpRepository) -> Self {
+        Self { signup_repository }
     }
 
     pub async fn signup_user(
         &self,
-        user: UserRequest,
-    ) -> Result<UserResponse, Json<ErrorResponse>> {
+        user: SignUpRequest,
+    ) -> Result<SignUpResponse, Json<ErrorResponse>> {
         // Validate user data
         if user.password != user.confirm_password {
             return Err(Json(ErrorResponse::new("Passwords do not match")));
         }
 
         match self
-            .user_repository
+            .signup_repository
             .exists_by_username(&user.username)
             .await
         {
@@ -46,7 +46,7 @@ impl SignUpService {
             _ => {}
         }
 
-        match self.user_repository.exists_by_email(&user.email).await {
+        match self.signup_repository.exists_by_email(&user.email).await {
             Ok(Some(true)) => return Err(Json(ErrorResponse::new("Email already exists"))),
             Err(e) => return Err(Json(ErrorResponse::new(format!("Database error: {e}")))),
             _ => {}
@@ -58,8 +58,8 @@ impl SignUpService {
 
         // Save user to database
         let created_user = self
-            .user_repository
-            .create_user(&NewUserInterface {
+            .signup_repository
+            .create_user(&NewSignUpInterface {
                 username: user.username,
                 email: user.email,
                 password: hashed_password,
@@ -93,18 +93,18 @@ impl SignUpService {
     post,
     path = "/signup",
     tag = "SignUp",
-    request_body = UserRequest,
+    request_body = SignUpRequest,
     responses(
-        (status = 201, description = "User signed up successfully", body = UserResponse),
+        (status = 201, description = "User signed up successfully", body = SignUpResponse),
         (status = 400, description = "Invalid user data", body = ErrorResponse)
     )
 )]
 pub async fn signup(
     State(app_state): State<AppState>,
-    Json(user_request): Json<UserRequest>,
+    Json(user_request): Json<SignUpRequest>,
 ) -> impl IntoResponse {
-    let user_repository = UserRepository::new(app_state.db_pool);
-    let signup_service = SignUpService::new(user_repository);
+    let signup_repository = SignUpRepository::new(app_state.db_pool);
+    let signup_service = SignUpService::new(signup_repository);
 
     match signup_service.signup_user(user_request).await {
         Ok(user) => (axum::http::StatusCode::CREATED, Json(user)).into_response(),

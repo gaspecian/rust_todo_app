@@ -1,15 +1,15 @@
-//! User Repository
-//! This module defines the user repository interface for the signup process.
+//! # `SignUp` Repository
+//! This module defines the signup repository interface for the signup process.
 
-use crate::modules::signup::interfaces::user_interfaces::{NewUserInterface, UserResponse};
+use crate::modules::signup::interfaces::signup_interfaces::{NewSignUpInterface, SignUpResponse};
 use sqlx::{Pool, Postgres};
 
-pub struct UserRepository {
+pub struct SignUpRepository {
     pool: Pool<Postgres>,
 }
 
-impl UserRepository {
-    // Contructor to create a new UserRepository instance
+impl SignUpRepository {
+    // Contructor to create a new SignUpRepository instance
     pub const fn new(pool: Pool<Postgres>) -> Self {
         Self { pool }
     }
@@ -37,7 +37,10 @@ impl UserRepository {
     }
 
     // Method that creates a new user
-    pub async fn create_user(&self, user: &NewUserInterface) -> Result<UserResponse, sqlx::Error> {
+    pub async fn create_user(
+        &self,
+        user: &NewSignUpInterface,
+    ) -> Result<SignUpResponse, sqlx::Error> {
         let user_id = sqlx::query_scalar!(
             "INSERT INTO users (username, email, password, created_at, updated_at) VALUES ($1, $2, $3, NOW(), NOW()) RETURNING id",
             user.username,
@@ -47,7 +50,7 @@ impl UserRepository {
         .fetch_one(&self.pool)
         .await?;
 
-        Ok(UserResponse {
+        Ok(SignUpResponse {
             id: user_id.to_string(),
             username: user.username.clone(),
         })
