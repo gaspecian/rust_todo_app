@@ -4,7 +4,7 @@
 
 use axum::{routing::get, Router};
 
-use crate::modules::health::service::{health_check, ping};
+use crate::modules::health::service::{health_check, ping, test_login};
 use crate::AppState;
 
 /// Creates and returns the health check routes
@@ -15,4 +15,5 @@ pub fn health_routes() -> Router<AppState> {
     Router::new()
         .route("/health", get(health_check))
         .route("/ping", get(ping))
+        .route("/test_login", get(test_login))
 }

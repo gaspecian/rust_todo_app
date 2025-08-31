@@ -14,19 +14,6 @@ impl UserRepository {
         Self { pool }
     }
 
-    // Method that fetches a user by username
-    // pub async fn fetch_by_username(&self, username: &str) -> Result<UserInterface, sqlx::Error> {
-    //     let user = sqlx::query_as!(
-    //         UserInterface,
-    //         "SELECT id, username, email, password, created_at, updated_at FROM users WHERE username = $1",
-    //         username
-    //     )
-    //     .fetch_one(&self.pool)
-    //     .await?;
-
-    //     Ok(user)
-    // }
-
     // Method that checks if a user exists by username
     pub async fn exists_by_username(&self, username: &str) -> Result<Option<bool>, sqlx::Error> {
         let exists = sqlx::query_scalar!(
