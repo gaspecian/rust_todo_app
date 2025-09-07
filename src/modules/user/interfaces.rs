@@ -6,6 +6,16 @@ use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
 #[derive(Serialize, Deserialize, ToSchema, Clone, Debug)]
+pub struct ValidatedUserSignUp {
+    pub username: String,
+    pub name: String,
+    pub surname: String,
+    pub email: String,
+    pub fone: i128,
+    pub password: String,
+}
+
+#[derive(Serialize, Deserialize, ToSchema, Clone, Debug)]
 pub struct User {
     // User Id in Database
     pub id: i64,
@@ -35,17 +45,17 @@ pub struct User {
 #[derive(Serialize, Deserialize, ToSchema, Clone, Debug)]
 pub struct UserSignUp {
     // Username for application login
-    pub username: String,
+    pub username: Option<String>,
     // User name
-    pub name: String,
+    pub name: Option<String>,
     // User surname
-    pub surname: String,
+    pub surname: Option<String>,
     // User email
-    pub email: String,
+    pub email: Option<String>,
     // User Fone
-    pub fone: i128,
+    pub fone: Option<i128>,
     // User password
-    pub password: String,
+    pub password: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, ToSchema, Clone, Debug)]
