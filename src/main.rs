@@ -20,8 +20,6 @@ mod auth;
 mod modules;
 
 use modules::health::health_routes;
-use modules::login::login_routes;
-use modules::signup::signup_routes;
 use modules::user::user_routes;
 use swagger::doc_config::ApiDoc;
 
