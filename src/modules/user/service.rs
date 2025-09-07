@@ -123,6 +123,18 @@ impl UserService {
                 Ok(user) => user,
             };
 
+        let user = validated_user.username;
+
+        // Find User login and password in repository
+        let stored_password = match self.user_repository.get_user_password(user).await {
+            Ok(password) => password,
+            Err(e) => {
+                //tracing::info!("User {0} not found", user);
+
+                return Err(Json(ErrorResponse::new(format!("User not found"))));
+            }
+        };
+
         return Ok(LoginUserResponse {
             token: "123443".to_string(),
             message: "User logged in".to_string(),
