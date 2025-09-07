@@ -8,6 +8,7 @@ use utoipa::ToSchema;
 
 use crate::modules::common::ErrorResponse;
 use crate::modules::user::interfaces::UserSignUp;
+use crate::modules::user::repository::UserRepository;
 use crate::modules::user::service::UserService;
 use crate::AppState;
 
@@ -39,7 +40,8 @@ pub async fn create_user_route(
     State(app_state): State<AppState>,
     Json(user_signup): Json<UserSignUp>,
 ) -> impl IntoResponse {
-    let user_service = UserService::new();
+    let user_repository = UserRepository::new(app_state.db_pool.clone());
+    let user_service = UserService::new(user_repository);
 
     match user_service.create_user(user_signup).await {
         Ok(response) => (StatusCode::CREATED, Json(response)).into_response(),
