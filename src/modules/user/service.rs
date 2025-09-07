@@ -5,7 +5,7 @@
 use axum::Json;
 use email_address::EmailAddress;
 
-use crate::modules::{common::ErrorResponse, user::{interfaces::{NewUserResponse, UserSignUp}, repository::UserRepository}};
+use crate::{modules::{common::ErrorResponse, user::{interfaces::{NewUserResponse, UserSignUp}, repository::UserRepository}}, utils::password::validate_password};
 
 pub struct UserService {
     user_repository: UserRepository,
@@ -43,6 +43,10 @@ impl UserService {
         let email_validation = EmailAddress::is_valid(&user_signup.email);
         if !email_validation {
             return Err(Json(ErrorResponse::new("Email is not valid")));
+        }
+
+        if !validate_password(&user_signup.password) {
+            return Err(Json(ErrorResponse::new("Password is not valid")));
         }
 
         let email = user_signup.email;

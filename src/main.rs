@@ -18,6 +18,7 @@ mod swagger {
 
 mod auth;
 mod modules;
+mod utils;
 
 use modules::health::health_routes;
 use modules::user::user_routes;
