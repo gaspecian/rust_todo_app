@@ -2,8 +2,6 @@
 //! 
 //! This module contains the bussiness logic for user operations.
 
-use std::any::Any;
-
 use axum::Json;
 
 use crate::modules::{common::ErrorResponse, user::{interfaces::{NewUserResponse, UserSignUp}, repository::UserRepository}};
@@ -26,6 +24,17 @@ impl UserService {
             .await 
         {
             Ok(Some(true)) => return Err(Json(ErrorResponse::new("Username already exists"))),
+            Err(e) => return Err(Json(ErrorResponse::new(format!("Database error: {e}")))),
+            _ => {}
+        }
+
+        // Check if email is already taken
+        match self
+            .user_repository
+            .exists_user_by_email(&user_signup.email)
+            .await
+        {
+            Ok(Some(true)) => return Err(Json(ErrorResponse::new("Email already exists"))),
             Err(e) => return Err(Json(ErrorResponse::new(format!("Database error: {e}")))),
             _ => {}
         }

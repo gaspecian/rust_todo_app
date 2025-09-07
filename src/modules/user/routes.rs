@@ -20,7 +20,7 @@ struct Response {
 // Creates and returns the signup routes
 pub fn user_routes() -> Router<AppState> {
     Router::new()
-        .route("/user/signup", post((create_user_route)))
+        .route("/user/signup", post(create_user_route))
         .route("/user", get(fetch_user_route))
 }
 

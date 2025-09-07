@@ -12,14 +12,6 @@ use crate::modules::health::{
     interfaces::health_response::{HealthResponse, PingResponse},
     service,
 };
-use crate::modules::login::{
-    interfaces::login_interfaces::{LoginRequest, LoginResponse},
-    service as login_service,
-};
-use crate::modules::signup::{
-    interfaces::signup_interfaces::{SignUpRequest, SignUpResponse},
-    service as signup_service,
-};
 
 use crate::modules::user::routes as user_routes;
 
@@ -41,7 +33,7 @@ use crate::modules::user::routes as user_routes;
         user_routes::create_user_route
     ),
     components(
-        schemas(HealthResponse, PingResponse, SignUpRequest, SignUpResponse, LoginRequest, LoginResponse, ErrorResponse, NewUserResponse, UserSignUp)
+        schemas(HealthResponse, PingResponse, ErrorResponse, NewUserResponse, UserSignUp)
     ),
     security(
         ("bearer_auth" = [])
