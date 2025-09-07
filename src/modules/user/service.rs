@@ -3,6 +3,7 @@
 //! This module contains the bussiness logic for user operations.
 
 use axum::Json;
+use email_address::EmailAddress;
 
 use crate::modules::{common::ErrorResponse, user::{interfaces::{NewUserResponse, UserSignUp}, repository::UserRepository}};
 
@@ -37,6 +38,11 @@ impl UserService {
             Ok(Some(true)) => return Err(Json(ErrorResponse::new("Email already exists"))),
             Err(e) => return Err(Json(ErrorResponse::new(format!("Database error: {e}")))),
             _ => {}
+        }
+
+        let email_validation = EmailAddress::is_valid(&user_signup.email);
+        if !email_validation {
+            return Err(Json(ErrorResponse::new("Email is not valid")));
         }
 
         let email = user_signup.email;
