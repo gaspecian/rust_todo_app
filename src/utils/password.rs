@@ -1,7 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 use argon2::{
-    password_hash::{rand_core::OsRng, PasswordHasher, SaltString},
+    password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
     Argon2,
 };
 use once_cell::sync::Lazy;
@@ -37,4 +37,19 @@ pub fn hash_password(password: &str) -> Result<String, String> {
             Err(format!("Failed to hash password: {e}"))
         }
     }
+}
+
+// Function that validates if password input is valid
+pub fn password_validation(stored_password_hash: &str, password_input: &str) -> bool {
+    let hash = match PasswordHash::new(&stored_password_hash) {
+        Ok(hash) => hash,
+        Err(e) => {
+            tracing::error!("Error getting password hash: {e}");
+            return false;
+        }
+    };
+
+    return Argon2::default()
+        .verify_password(password_input.as_bytes(), &hash)
+        .is_ok();
 }

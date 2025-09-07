@@ -18,7 +18,7 @@ use crate::{
     },
     utils::{
         fone_validation::validate_fone,
-        password::{hash_password, validate_password},
+        password::{hash_password, password_validation, validate_password},
         required_fields::validate_required_fields,
     },
 };
@@ -111,14 +111,17 @@ impl UserService {
         &self,
         user_login: LoginUserRequest,
     ) -> Result<LoginUserResponse, Json<ErrorResponse>> {
+        tracing::debug!("Login attempt started");
+
         // Validate required fields
         let required_fields = vec!["username", "password"];
-        let mut validated_user: ValidatedLoginUserRequest =
+        let validated_user: ValidatedLoginUserRequest =
             match validate_required_fields(&user_login, required_fields) {
                 Err(missing) => {
+                    tracing::debug!("Missing required fields: {0}", &missing);
                     return Err(Json(ErrorResponse::new(format!(
                         "Missing required fields: {missing}"
-                    ))))
+                    ))));
                 }
                 Ok(user) => user,
             };
@@ -129,11 +132,23 @@ impl UserService {
         let stored_password = match self.user_repository.get_user_password(&user).await {
             Ok(password) => password,
             Err(e) => {
-                tracing::info!("User {0} not found", &user);
+                tracing::debug!("User {0} not found", &user);
 
-                return Err(Json(ErrorResponse::new(format!("User not found"))));
+                return Err(Json(ErrorResponse::new(format!(
+                    "Username and Password invalid"
+                ))));
             }
         };
+
+        let is_password_correct = password_validation(&stored_password, &validated_user.password);
+        if !is_password_correct {
+            tracing::debug!("Password validation failed for username: {0}", &user);
+            return Err(Json(ErrorResponse::new(format!(
+                "Username and Password invalid"
+            ))));
+        }
+
+        tracing::debug!("Login attempt successfully");
 
         return Ok(LoginUserResponse {
             token: "123443".to_string(),
