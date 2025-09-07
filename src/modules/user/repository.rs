@@ -53,11 +53,13 @@ impl UserRepository {
     }
 
     // Get User password
-    pub async fn get_user_password(&self, username: String) -> Result<String, Error> {
-        let password =
-            sqlx::query_scalar!("SELECT password from users where username = $1", username)
-                .fetch_one(&self.pool)
-                .await?;
+    pub async fn get_user_password(&self, username: &str) -> Result<String, Error> {
+        let password = sqlx::query_scalar!(
+            "SELECT password from users where username = $1",
+            username.to_string()
+        )
+        .fetch_one(&self.pool)
+        .await?;
 
         Ok(password)
     }
