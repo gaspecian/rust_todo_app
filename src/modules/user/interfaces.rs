@@ -11,7 +11,7 @@ pub struct ValidatedUserSignUp {
     pub name: String,
     pub surname: String,
     pub email: String,
-    pub fone: i128,
+    pub fone: String,
     pub password: String,
 }
 
@@ -28,7 +28,7 @@ pub struct User {
     // User email
     pub email: String,
     // User Fone
-    pub fone: i128,
+    pub fone: String,
     // User password hashed
     pub password: String,
     // User creation date
@@ -53,7 +53,7 @@ pub struct UserSignUp {
     // User email
     pub email: Option<String>,
     // User Fone
-    pub fone: Option<i128>,
+    pub fone: Option<String>,
     // User password
     pub password: Option<String>,
 }

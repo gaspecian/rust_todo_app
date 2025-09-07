@@ -63,13 +63,22 @@ impl UserService {
             return Err(Json(ErrorResponse::new("Fone is not valid")));
         }
 
-        let response = NewUserResponse {
-            id: 1,
-            username: validated_user.username,
-            email: validated_user.email.clone(),
-            message: format!("User created, activation email sent to {0}", validated_user.email)
-        };
+        let username = validated_user.username.clone();
+        let email = validated_user.email.clone();
 
-        Ok(response)
+        match self
+            .user_repository
+            .create_user(validated_user)
+            .await
+        {
+            Ok(user) => Ok(NewUserResponse {
+                id: user as i64,
+                username,
+                email: email.clone(),
+                // message: format!("User created. Activation email sent to {0}", email)
+                message: "User created".to_string()
+            }),
+            Err(e) => Err(Json(ErrorResponse::new(format!("Database error: {e}")))),
+        }
     }
 }

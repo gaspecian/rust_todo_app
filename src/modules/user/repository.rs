@@ -3,6 +3,8 @@
 
 use sqlx::{Pool, Postgres, Error};
 
+use crate::modules::user::interfaces::ValidatedUserSignUp;
+
 pub struct UserRepository {
     pool: Pool<Postgres>
 }
@@ -31,5 +33,17 @@ impl UserRepository {
         ).fetch_one(&self.pool).await?;
 
         Ok(exists)
+    }
+
+    // Method that creates user in database
+    pub async fn create_user(&self, user_signup: ValidatedUserSignUp) -> Result<i32, Error> {
+        let created = sqlx::query_scalar!(
+            "INSERT INTO users (username, email, password, active) VALUES ($1, $2, $3, true) RETURNING id",
+            user_signup.username,
+            user_signup.email,
+            user_signup.password
+        ).fetch_one(&self.pool).await?;
+
+        Ok(created)
     }
 }
