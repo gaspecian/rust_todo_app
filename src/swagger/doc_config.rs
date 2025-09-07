@@ -7,13 +7,16 @@ use utoipa::{
     Modify, OpenApi,
 };
 
-use crate::modules::health::{
-    interfaces::health_response::{HealthResponse, PingResponse},
-    service,
-};
 use crate::modules::{
     common::ErrorResponse,
     user::interfaces::{NewUserResponse, UserSignUp},
+};
+use crate::modules::{
+    health::{
+        interfaces::health_response::{HealthResponse, PingResponse},
+        service,
+    },
+    user::interfaces::{LoginUserRequest, LoginUserResponse},
 };
 
 use crate::modules::user::routes as user_routes;
@@ -33,10 +36,11 @@ use crate::modules::user::routes as user_routes;
         service::health_check,
         service::ping,
         service::test_login,
-        user_routes::create_user_route
+        user_routes::create_user_route,
+        user_routes::login_user_route
     ),
     components(
-        schemas(HealthResponse, PingResponse, ErrorResponse, NewUserResponse, UserSignUp)
+        schemas(HealthResponse, PingResponse, ErrorResponse, NewUserResponse, UserSignUp, LoginUserRequest, LoginUserResponse)
     ),
     security(
         ("bearer_auth" = [])

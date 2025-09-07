@@ -9,12 +9,16 @@ use crate::{
     modules::{
         common::ErrorResponse,
         user::{
-            interfaces::{NewUserResponse, UserSignUp, ValidatedUserSignUp},
+            interfaces::{
+                LoginUserRequest, LoginUserResponse, NewUserResponse, UserSignUp,
+                ValidatedLoginUserRequest, ValidatedUserSignUp,
+            },
             repository::UserRepository,
         },
     },
     utils::{
-        fone_validation::validate_fone, password::hash_password, password::validate_password,
+        fone_validation::validate_fone,
+        password::{hash_password, validate_password},
         required_fields::validate_required_fields,
     },
 };
@@ -100,5 +104,28 @@ impl UserService {
             }),
             Err(e) => Err(Json(ErrorResponse::new(format!("Database error: {e}")))),
         }
+    }
+
+    // Function that handles user login
+    pub async fn login_user(
+        &self,
+        user_login: LoginUserRequest,
+    ) -> Result<LoginUserResponse, Json<ErrorResponse>> {
+        // Validate required fields
+        let required_fields = vec!["username", "password"];
+        let mut validated_user: ValidatedLoginUserRequest =
+            match validate_required_fields(&user_login, required_fields) {
+                Err(missing) => {
+                    return Err(Json(ErrorResponse::new(format!(
+                        "Missing required fields: {missing}"
+                    ))))
+                }
+                Ok(user) => user,
+            };
+
+        return Ok(LoginUserResponse {
+            token: "123443".to_string(),
+            message: "User logged in".to_string(),
+        });
     }
 }

@@ -62,3 +62,27 @@ pub struct NewUserResponse {
     pub id: i64,
     pub message: String,
 }
+
+#[derive(Serialize, Deserialize, ToSchema, Clone, Debug)]
+pub struct LoginUserRequest {
+    // Username for application login
+    pub username: Option<String>,
+    // User password
+    pub password: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, ToSchema, Clone, Debug)]
+pub struct ValidatedLoginUserRequest {
+    // Username for application login
+    pub username: String,
+    // User password
+    pub password: String,
+}
+
+#[derive(Serialize, Deserialize, ToSchema, Clone, Debug)]
+pub struct LoginUserResponse {
+    // Token for authentications
+    pub token: String,
+    // Message for authentication
+    pub message: String,
+}

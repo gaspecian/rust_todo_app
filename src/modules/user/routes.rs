@@ -7,7 +7,7 @@ use serde::Serialize;
 use utoipa::ToSchema;
 
 use crate::modules::common::ErrorResponse;
-use crate::modules::user::interfaces::UserSignUp;
+use crate::modules::user::interfaces::{LoginUserRequest, LoginUserResponse, UserSignUp};
 use crate::modules::user::repository::UserRepository;
 use crate::modules::user::service::UserService;
 use crate::AppState;
@@ -19,7 +19,9 @@ struct Response {
 
 // Creates and returns the signup routes
 pub fn user_routes() -> Router<AppState> {
-    Router::new().route("/user/signup", post(create_user_route))
+    Router::new()
+        .route("/user/signup", post(create_user_route))
+        .route("/user/login", post(login_user_route))
     // .route("/user", get(fetch_user_route))
 }
 
@@ -46,6 +48,39 @@ pub async fn create_user_route(
         Ok(response) => (StatusCode::CREATED, Json(response)).into_response(),
         Err(error) => (
             StatusCode::BAD_REQUEST,
+            Json(ErrorResponse {
+                message: error.0.message,
+            }),
+        )
+            .into_response(),
+    }
+}
+
+/// Handler function for login route
+#[utoipa::path(
+    post,
+    path = "/user/login",
+    tag = "Login",
+    //request_body = UserSignUp,
+    responses(
+        (status = 201, description = "User logged successfully", body = LoginUserResponse),
+        (status = 401, description = "Not Authorized", body = ErrorResponse),
+        (status = 400, description = "Invalid user data", body = ErrorResponse)
+    )
+)]
+pub async fn login_user_route(
+    State(app_state): State<AppState>,
+    Json(user_login): Json<LoginUserRequest>,
+) -> impl IntoResponse {
+    let user_repository = UserRepository::new(app_state.db_pool.clone());
+    let user_service = UserService::new(user_repository);
+
+    tracing::info!("Login attempt");
+
+    match user_service.login_user(user_login).await {
+        Ok(response) => (StatusCode::CREATED, Json(response)).into_response(),
+        Err(error) => (
+            StatusCode::UNAUTHORIZED,
             Json(ErrorResponse {
                 message: error.0.message,
             }),
