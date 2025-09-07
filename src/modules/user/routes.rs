@@ -2,7 +2,7 @@
 //! This module defines the HTTP routes for users funciionality.
 
 use axum::routing::post;
-use axum::{extract::State, http::StatusCode, Router, response::IntoResponse, Json, routing::get};
+use axum::{extract::State, http::StatusCode, response::IntoResponse, Json, Router};
 use serde::Serialize;
 use utoipa::ToSchema;
 
@@ -19,9 +19,8 @@ struct Response {
 
 // Creates and returns the signup routes
 pub fn user_routes() -> Router<AppState> {
-    Router::new()
-        .route("/user/signup", post(create_user_route))
-        .route("/user", get(fetch_user_route))
+    Router::new().route("/user/signup", post(create_user_route))
+    // .route("/user", get(fetch_user_route))
 }
 
 // Create User Route
@@ -45,30 +44,31 @@ pub async fn create_user_route(
 
     match user_service.create_user(user_signup).await {
         Ok(response) => (StatusCode::CREATED, Json(response)).into_response(),
-        Err(error) => (StatusCode::BAD_REQUEST, Json(ErrorResponse{
-            message: error.0.message
-        })).into_response(), 
+        Err(error) => (
+            StatusCode::BAD_REQUEST,
+            Json(ErrorResponse {
+                message: error.0.message,
+            }),
+        )
+            .into_response(),
     }
 }
 
 // Fetch User Route
-#[utoipa::path(
-    get,
-    path = "/user",
-    responses(
-        (status = 200, description = "User fetched successfully"),
-    ),
-    security(
-        ("jwt_auth" = [])
-    )
-)]
-pub async fn fetch_user_route(
-    State(app_state): State<AppState>
-) -> impl IntoResponse {
-    let response = Response {
-        message: "User fetched successfully".to_string()
-    };
+// #[utoipa::path(
+//     get,
+//     path = "/user",
+//     responses(
+//         (status = 200, description = "User fetched successfully"),
+//     ),
+//     security(
+//         ("jwt_auth" = [])
+//     )
+// )]
+// pub async fn fetch_user_route(State(app_state): State<AppState>) -> impl IntoResponse {
+//     let response = Response {
+//         message: "User fetched successfully".to_string(),
+//     };
 
-    (StatusCode::OK, Json(response))
-}
-
+//     (StatusCode::OK, Json(response))
+// }

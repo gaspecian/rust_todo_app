@@ -7,10 +7,13 @@ use utoipa::{
     Modify, OpenApi,
 };
 
-use crate::modules::{common::ErrorResponse, user::interfaces::{NewUserResponse, UserSignUp}};
 use crate::modules::health::{
     interfaces::health_response::{HealthResponse, PingResponse},
     service,
+};
+use crate::modules::{
+    common::ErrorResponse,
+    user::interfaces::{NewUserResponse, UserSignUp},
 };
 
 use crate::modules::user::routes as user_routes;

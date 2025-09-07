@@ -1,5 +1,5 @@
 pub fn validate_fone(fone: &str) -> bool {
-    let fone_cleaned: String = fone.chars().filter(|c| c.is_digit(10)).collect();
+    let fone_cleaned: String = fone.chars().filter(char::is_ascii_digit).collect();
     let len = fone_cleaned.len();
-    len >= 10 && len <= 15
+    (10..=15).contains(&len)
 }

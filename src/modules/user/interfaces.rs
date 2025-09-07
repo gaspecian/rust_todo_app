@@ -1,8 +1,8 @@
 //! # `Users` Interfaces
 //! This module defines the data structures from Users module
 
-use time::OffsetDateTime;
 use serde::{Deserialize, Serialize};
+use time::OffsetDateTime;
 use utoipa::ToSchema;
 
 #[derive(Serialize, Deserialize, ToSchema, Clone, Debug)]
@@ -40,7 +40,6 @@ pub struct User {
     // User activation date
     pub activated_at: Option<OffsetDateTime>,
 }
-
 
 #[derive(Serialize, Deserialize, ToSchema, Clone, Debug)]
 pub struct UserSignUp {
