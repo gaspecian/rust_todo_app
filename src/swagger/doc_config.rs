@@ -7,7 +7,7 @@ use utoipa::{
     Modify, OpenApi,
 };
 
-use crate::modules::common::ErrorResponse;
+use crate::modules::{common::ErrorResponse, user::interfaces::{NewUserResponse, UserSignUp}};
 use crate::modules::health::{
     interfaces::health_response::{HealthResponse, PingResponse},
     service,
@@ -20,6 +20,8 @@ use crate::modules::signup::{
     interfaces::signup_interfaces::{SignUpRequest, SignUpResponse},
     service as signup_service,
 };
+
+use crate::modules::user::routes as user_routes;
 
 /// `OpenAPI` documentation configuration
 ///
@@ -36,11 +38,10 @@ use crate::modules::signup::{
         service::health_check,
         service::ping,
         service::test_login,
-        signup_service::signup,
-        login_service::login
+        user_routes::create_user_route
     ),
     components(
-        schemas(HealthResponse, PingResponse, SignUpRequest, SignUpResponse, LoginRequest, LoginResponse, ErrorResponse)
+        schemas(HealthResponse, PingResponse, SignUpRequest, SignUpResponse, LoginRequest, LoginResponse, ErrorResponse, NewUserResponse, UserSignUp)
     ),
     security(
         ("bearer_auth" = [])
