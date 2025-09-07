@@ -5,7 +5,7 @@
 use axum::Json;
 use email_address::EmailAddress;
 
-use crate::{modules::{common::ErrorResponse, user::{interfaces::{NewUserResponse, UserSignUp, ValidatedUserSignUp}, repository::UserRepository}}, utils::{fone_validation::validate_fone, password::validate_password, required_fields::validate_required_fields}};
+use crate::{modules::{common::ErrorResponse, user::{interfaces::{NewUserResponse, UserSignUp, ValidatedUserSignUp}, repository::UserRepository}}, utils::{fone_validation::validate_fone, password::validate_password, password::hash_password, required_fields::validate_required_fields}};
 
 pub struct UserService {
     user_repository: UserRepository,
@@ -20,7 +20,7 @@ impl UserService {
 
         // Validate required fields
         let required_fields = vec!["username", "email", "password", "fone", "name", "surname"];
-        let validated_user: ValidatedUserSignUp = match validate_required_fields(&user_signup, required_fields) {
+        let mut validated_user: ValidatedUserSignUp = match validate_required_fields(&user_signup, required_fields) {
             Err(missing) => return Err(Json(ErrorResponse::new(format!("Missing required fields: {missing}")))),
             Ok(user) => user,
         };
@@ -62,9 +62,9 @@ impl UserService {
         if !validate_fone(&validated_user.fone.to_string()) {
             return Err(Json(ErrorResponse::new("Fone is not valid")));
         }
-
-        let username = validated_user.username.clone();
-        let email = validated_user.email.clone();
+        
+        let hashed_password = hash_password(&validated_user.password);
+        validated_user.password = hashed_password;
 
         match self
             .user_repository
@@ -73,9 +73,6 @@ impl UserService {
         {
             Ok(user) => Ok(NewUserResponse {
                 id: user as i64,
-                username,
-                email: email.clone(),
-                // message: format!("User created. Activation email sent to {0}", email)
                 message: "User created".to_string()
             }),
             Err(e) => Err(Json(ErrorResponse::new(format!("Database error: {e}")))),

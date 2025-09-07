@@ -61,7 +61,5 @@ pub struct UserSignUp {
 #[derive(Serialize, Deserialize, ToSchema, Clone, Debug)]
 pub struct NewUserResponse {
     pub id: i64,
-    pub username: String,
-    pub email: String,
     pub message: String,
 }
