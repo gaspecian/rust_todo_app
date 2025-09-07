@@ -34,6 +34,16 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
+-- Create a function to automatically update the activated_at timestamp
+CREATE OR REPLACE FUNCTION update_activated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.active = TRUE AND OLD.active = FALSE THEN
+        NEW.activated_at = CURRENT_TIMESTAMP;
+    END IF;
+    RETURN NEW;
+END;
+
 -- Create trigger to automatically update updated_at
 CREATE TRIGGER update_todos_updated_at 
     BEFORE UPDATE ON todos 
@@ -45,9 +55,14 @@ CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(255) NOT NULL UNIQUE,
     email VARCHAR(255) NOT NULL UNIQUE,
+    name VARCHAR(255),
+    surname VARCHAR(255),
+    fone NUMBER,
     password VARCHAR(255) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    active BOOLEAN NOT NULL DEFAULT FALSE,
+    activated_at TIMESTAMP WITH TIME ZONE DEFAULT NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
@@ -60,3 +75,9 @@ CREATE TRIGGER update_users_updated_at
     FOR EACH ROW 
     EXECUTE FUNCTION update_updated_at_column();
 
+-- Create trigger to automatically update activated_at
+CREATE TRIGGER update_users_activated_at
+    BEFORE UPDATE ON users 
+    FOR EACH ROW 
+    WHEN (OLD.active IS DISTINCT FROM NEW.active AND NEW.active = TRUE)
+    EXECUTE FUNCTION update_activated_at_column();
