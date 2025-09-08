@@ -91,8 +91,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let app = Router::new()
         .merge(SwaggerUi::new("/swagger-ui").url("/api-doc/openapi.json", ApiDoc::openapi()))
         .merge(health_routes())
-        // .merge(signup_routes())
-        // .merge(login_routes())
         .merge(user_routes())
         .with_state(app_state);
 
