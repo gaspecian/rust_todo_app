@@ -86,3 +86,11 @@ pub struct LoginUserResponse {
     // Message for authentication
     pub message: String,
 }
+
+#[derive(Serialize, Deserialize, ToSchema, Clone, Debug)]
+pub struct GetUserForLoginDb {
+    // Token for authentications
+    pub password: String,
+    // Message for authentication
+    pub id: i64,
+}

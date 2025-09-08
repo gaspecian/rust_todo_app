@@ -77,7 +77,14 @@ pub async fn login_user_route(
 
     tracing::info!("Login attempt");
 
-    match user_service.login_user(user_login).await {
+    match user_service
+        .login_user(
+            user_login,
+            app_state.encoding_key,
+            app_state.session_duration_minutes,
+        )
+        .await
+    {
         Ok(response) => (StatusCode::CREATED, Json(response)).into_response(),
         Err(error) => (
             StatusCode::UNAUTHORIZED,

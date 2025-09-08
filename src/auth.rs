@@ -8,12 +8,11 @@ use axum_extra::{extract::TypedHeader, headers::authorization::Bearer, headers::
 use jsonwebtoken::{decode, Algorithm, Validation};
 use serde::{Deserialize, Serialize};
 
-use chrono::Utc;
-
 // Make the Claims struct public
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
     pub iat: i64,
+    pub exp: i64,
     pub user_id: i64,
 }
 
@@ -24,24 +23,28 @@ impl FromRequestParts<AppState> for Claims {
         parts: &mut Parts,
         state: &AppState,
     ) -> Result<Self, Self::Rejection> {
-        let session_duration = state.session_duration_minutes;
         // Extract the token from the authorization header
-        let TypedHeader(Authorization(bearer)) = parts
-            .extract::<TypedHeader<Authorization<Bearer>>>()
-            .await
-            .map_err(|_| StatusCode::UNAUTHORIZED)?;
+        let TypedHeader(Authorization(bearer)) =
+            match parts.extract::<TypedHeader<Authorization<Bearer>>>().await {
+                Ok(extracted) => extracted,
+                Err(e) => {
+                    tracing::warn!("Failed to extract bearer header: {0}", &e);
+                    return Err(StatusCode::UNAUTHORIZED);
+                }
+            };
 
         // Decode the user data
-        let token_data = decode::<Self>(
-            bearer.token(),
+        let token_data = match decode::<Self>(
+            &bearer.token(),
             &state.decoding_key,
             &Validation::new(Algorithm::HS256),
-        )
-        .map_err(|_| StatusCode::UNAUTHORIZED)?;
-
-        if token_data.claims.iat + (session_duration * 60) < Utc::now().timestamp() {
-            return Err(StatusCode::UNAUTHORIZED);
-        }
+        ) {
+            Ok(data) => data,
+            Err(e) => {
+                tracing::warn!("Failed to decode token: {0}", &e);
+                return Err(StatusCode::UNAUTHORIZED);
+            }
+        };
 
         Ok(token_data.claims)
     }
