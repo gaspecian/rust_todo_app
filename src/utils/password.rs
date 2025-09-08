@@ -41,7 +41,7 @@ pub fn hash_password(password: &str) -> Result<String, String> {
 
 // Function that validates if password input is valid
 pub fn password_validation(stored_password_hash: &str, password_input: &str) -> bool {
-    let hash = match PasswordHash::new(&stored_password_hash) {
+    let hash = match PasswordHash::new(stored_password_hash) {
         Ok(hash) => hash,
         Err(e) => {
             tracing::error!("Error getting password hash: {e}");
@@ -49,7 +49,7 @@ pub fn password_validation(stored_password_hash: &str, password_input: &str) -> 
         }
     };
 
-    return Argon2::default()
+    Argon2::default()
         .verify_password(password_input.as_bytes(), &hash)
-        .is_ok();
+        .is_ok()
 }

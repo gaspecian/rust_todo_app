@@ -3,11 +3,11 @@
 //! This module contains the bussiness logic for user operations.
 
 use axum::Json;
-use chrono::{Duration, Utc};
 use email_address::EmailAddress;
-use jsonwebtoken::{encode, EncodingKey, Header};
+use jsonwebtoken::EncodingKey;
 
 use crate::{
+    auth::generate_token,
     modules::{
         common::ErrorResponse,
         user::{
@@ -24,8 +24,6 @@ use crate::{
         required_fields::validate_required_fields,
     },
 };
-
-use crate::auth::Claims;
 
 pub struct UserService {
     user_repository: UserRepository,
@@ -117,8 +115,6 @@ impl UserService {
         enconding_key: EncodingKey,
         session_duration: i64,
     ) -> Result<LoginUserResponse, Json<ErrorResponse>> {
-        tracing::debug!("Login attempt started");
-
         // Validate required fields
         let required_fields = vec!["username", "password"];
         let validated_user: ValidatedLoginUserRequest =
@@ -135,15 +131,11 @@ impl UserService {
         let user = validated_user.username;
 
         // Find User login and password in repository
-        let user_info = match self.user_repository.get_user_for_login(&user).await {
-            Ok(info) => info,
-            Err(_) => {
-                tracing::warn!("User {0} not found", &user);
-
-                return Err(Json(ErrorResponse::new(format!(
-                    "Username and Password invalid"
-                ))));
-            }
+        let Ok(user_info) = self.user_repository.get_user_for_login(&user).await else {
+            tracing::warn!("User {0} not found", &user);
+            return Err(Json(ErrorResponse::new(
+                "Username and Password invalid".to_string(),
+            )));
         };
 
         // Validate password
@@ -151,35 +143,25 @@ impl UserService {
             password_validation(&user_info.password, &validated_user.password);
         if !is_password_correct {
             tracing::warn!("Password validation failed for username: {0}", &user);
-            return Err(Json(ErrorResponse::new(format!(
-                "Username and Password invalid"
-            ))));
+            return Err(Json(ErrorResponse::new(
+                "Username and Password invalid".to_string(),
+            )));
         }
 
         // Generate JWT token
-        let now = Utc::now();
-        let exp = now + Duration::minutes(session_duration);
-        let claims = Claims {
-            user_id: user_info.id,
-            iat: now.timestamp(),
-            exp: exp.timestamp(),
-        };
-
-        let token = match encode(&Header::default(), &claims, &enconding_key) {
+        let token = match generate_token(session_duration, user_info.id, &enconding_key) {
             Ok(token) => token,
             Err(e) => {
-                tracing::warn!("Error generating JWT token: {0}", e);
-                return Err(Json(ErrorResponse::new(format!(
-                    "Username and Password invalid"
-                ))));
+                tracing::warn!("Error generating JWT token: {0}", e.message);
+                return Err(Json(ErrorResponse::new(
+                    "Username and Password invalid".to_string(),
+                )));
             }
         };
 
-        tracing::debug!("Login attempt successfully");
-
-        return Ok(LoginUserResponse {
+        Ok(LoginUserResponse {
             token,
             message: "User logged in".to_string(),
-        });
+        })
     }
 }
