@@ -451,6 +451,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "email_address"
+version = "0.2.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e079f19b08ca6239f47f8ba8509c11cf3ea30095831f7fed61441475edd8c449"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "equivalent"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1518,13 +1527,18 @@ dependencies = [
  "axum-extra",
  "chrono",
  "dotenvy",
+ "email_address",
  "jsonwebtoken",
+ "once_cell",
  "rand_core 0.9.3",
+ "regex",
  "serde",
+ "serde_json",
  "sqlx",
  "time",
  "tokio",
  "tokio-test",
+ "tower",
  "tracing",
  "tracing-subscriber",
  "utoipa",

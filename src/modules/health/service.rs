@@ -99,3 +99,70 @@ pub async fn test_login(state: State<AppState>, claims: Claims) -> impl IntoResp
         }
     }
 }
+
+#[cfg(test)]
+#[allow(clippy::redundant_clone, clippy::single_char_pattern)]
+mod tests {
+    use super::*;
+    use axum::http::StatusCode;
+
+    #[tokio::test]
+    async fn test_health_check() {
+        let response = health_check().await.into_response();
+        assert_eq!(response.status(), StatusCode::OK);
+    }
+
+    #[test]
+    fn test_health_response_creation() {
+        let response = HealthResponse {
+            status: "Healthy".to_string(),
+        };
+        assert_eq!(response.status, "Healthy");
+    }
+
+    #[test]
+    fn test_ping_response_creation() {
+        let response = PingResponse {
+            message: "Pong".to_string(),
+            timestamp: "2023-01-01T00:00:00Z".to_string(),
+        };
+        assert_eq!(response.message, "Pong");
+        assert_eq!(response.timestamp, "2023-01-01T00:00:00Z");
+    }
+
+    #[test]
+    fn test_health_check_error_conditions() {
+        // Test error response creation
+        let error_response = HealthResponse {
+            status: "Unhealthy".to_string(),
+        };
+        assert_eq!(error_response.status, "Unhealthy");
+    }
+
+    #[test]
+    fn test_ping_timestamp_format() {
+        let timestamp = chrono::Utc::now().to_rfc3339();
+        let response = PingResponse {
+            message: "Pong".to_string(),
+            timestamp: timestamp.clone(),
+        };
+        assert!(response.timestamp.contains("T"));
+        // RFC3339 format may end with +00:00 instead of Z
+        assert!(
+            response.timestamp.contains("T")
+                && (response.timestamp.contains("Z") || response.timestamp.contains("+00:00"))
+        );
+    }
+
+    #[test]
+    fn test_health_service_responses() {
+        let healthy = HealthResponse {
+            status: "OK".to_string(),
+        };
+        let unhealthy = HealthResponse {
+            status: "ERROR".to_string(),
+        };
+
+        assert_ne!(healthy.status, unhealthy.status);
+    }
+}
