@@ -1,13 +1,16 @@
 //! #`User` Routes
 //! This module defines the HTTP routes for users funciionality.
 
-use axum::routing::post;
+use axum::routing::{get, post};
 use axum::{extract::State, http::StatusCode, response::IntoResponse, Json, Router};
 use serde::Serialize;
 use utoipa::ToSchema;
 
+use crate::auth::Claims;
 use crate::modules::common::ErrorResponse;
-use crate::modules::user::interfaces::{LoginUserRequest, LoginUserResponse, UserSignUp};
+use crate::modules::user::interfaces::{
+    FetchUserResponse, LoginUserRequest, LoginUserResponse, UserSignUp,
+};
 use crate::modules::user::repository::UserRepository;
 use crate::modules::user::service::UserService;
 use crate::AppState;
@@ -22,7 +25,7 @@ pub fn user_routes() -> Router<AppState> {
     Router::new()
         .route("/user/signup", post(create_user_route))
         .route("/user/login", post(login_user_route))
-    // .route("/user", get(fetch_user_route))
+        .route("/user", get(fetch_user_route))
 }
 
 // Create User Route
@@ -97,20 +100,34 @@ pub async fn login_user_route(
 }
 
 // Fetch User Route
-// #[utoipa::path(
-//     get,
-//     path = "/user",
-//     responses(
-//         (status = 200, description = "User fetched successfully"),
-//     ),
-//     security(
-//         ("jwt_auth" = [])
-//     )
-// )]
-// pub async fn fetch_user_route(State(app_state): State<AppState>) -> impl IntoResponse {
-//     let response = Response {
-//         message: "User fetched successfully".to_string(),
-//     };
+#[utoipa::path(
+    get,
+    path = "/user",
+    tag = "User Management",
+    responses(
+        (status = 200, description = "User fetched successfully", body = FetchUserResponse),
+    ),
+    security(
+        ("jwt_auth" = [])
+    )
+)]
+pub async fn fetch_user_route(
+    State(app_state): State<AppState>,
+    claims: Claims,
+) -> impl IntoResponse {
+    let user_repository = UserRepository::new(app_state.db_pool.clone());
+    let user_service = UserService::new(user_repository);
 
-//     (StatusCode::OK, Json(response))
-// }
+    let user_id = claims.user_id;
+
+    match user_service.fetch_user(user_id).await {
+        Ok(user) => (StatusCode::OK, Json(user)).into_response(),
+        Err(error) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ErrorResponse {
+                message: error.0.message,
+            }),
+        )
+            .into_response(),
+    }
+}

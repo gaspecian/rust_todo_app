@@ -94,3 +94,19 @@ pub struct GetUserForLoginDb {
     // Message for authentication
     pub id: i64,
 }
+
+// Fetch User Data
+#[derive(Serialize, Deserialize, ToSchema, Clone, Debug)]
+pub struct FetchUserResponse {
+    pub username: String,
+    pub name: Option<String>,
+    pub surname: Option<String>,
+    pub email: String,
+    pub fone: Option<String>,
+    pub created_at: Option<OffsetDateTime>,
+    pub updated_at: Option<OffsetDateTime>,
+    // Check if user is active
+    pub active: bool,
+    // User activation date
+    pub activated_at: Option<OffsetDateTime>,
+}

@@ -12,8 +12,8 @@ use crate::{
         common::ErrorResponse,
         user::{
             interfaces::{
-                LoginUserRequest, LoginUserResponse, NewUserResponse, UserSignUp,
-                ValidatedLoginUserRequest, ValidatedUserSignUp,
+                FetchUserResponse, LoginUserRequest, LoginUserResponse, NewUserResponse,
+                UserSignUp, ValidatedLoginUserRequest, ValidatedUserSignUp,
             },
             repository::UserRepository,
         },
@@ -162,6 +162,29 @@ impl UserService {
         Ok(LoginUserResponse {
             token,
             message: "User logged in".to_string(),
+        })
+    }
+
+    // Fetch User Data
+    pub async fn fetch_user(&self, id: i64) -> Result<FetchUserResponse, Json<ErrorResponse>> {
+        let user = match self.user_repository.fetch_user(id).await {
+            Ok(user) => user,
+            Err(e) => {
+                tracing::warn!("Error fetching user data: {0}", e);
+                return Err(Json(ErrorResponse::new("User not found".to_string())));
+            }
+        };
+
+        Ok(FetchUserResponse {
+            username: user.username,
+            name: user.name,
+            surname: user.surname,
+            email: user.email,
+            fone: user.fone,
+            created_at: user.created_at,
+            updated_at: user.updated_at,
+            active: user.active,
+            activated_at: user.activated_at,
         })
     }
 }

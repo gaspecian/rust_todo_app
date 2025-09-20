@@ -3,7 +3,7 @@
 
 use sqlx::{Error, Pool, Postgres};
 
-use crate::modules::user::interfaces::{GetUserForLoginDb, ValidatedUserSignUp};
+use crate::modules::user::interfaces::{FetchUserResponse, GetUserForLoginDb, ValidatedUserSignUp};
 
 pub struct UserRepository {
     pool: Pool<Postgres>,
@@ -64,6 +64,28 @@ impl UserRepository {
         Ok(GetUserForLoginDb {
             password: result.password,
             id: i64::from(result.id),
+        })
+    }
+
+    // Fetch User Data
+    pub async fn fetch_user(&self, id: i64) -> Result<FetchUserResponse, Error> {
+        let result = sqlx::query!(
+            "SELECT id, username, name, surname, email, fone, created_at, updated_at, active, activated_at FROM users WHERE id = $1",
+            id as i32
+        )
+        .fetch_one(&self.pool)
+        .await?;
+
+        Ok(FetchUserResponse {
+            username: result.username,
+            name: result.name,
+            surname: result.surname,
+            email: result.email,
+            fone: result.fone,
+            created_at: result.created_at,
+            updated_at: result.updated_at,
+            active: result.active,
+            activated_at: result.activated_at,
         })
     }
 }

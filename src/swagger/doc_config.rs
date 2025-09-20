@@ -9,7 +9,7 @@ use utoipa::{
 
 use crate::modules::{
     common::ErrorResponse,
-    user::interfaces::{NewUserResponse, UserSignUp},
+    user::interfaces::{FetchUserResponse, NewUserResponse, UserSignUp},
 };
 use crate::modules::{
     health::{
@@ -37,10 +37,11 @@ use crate::modules::user::routes as user_routes;
         service::ping,
         service::test_login,
         user_routes::create_user_route,
-        user_routes::login_user_route
+        user_routes::login_user_route,
+        user_routes::fetch_user_route,
     ),
     components(
-        schemas(HealthResponse, PingResponse, ErrorResponse, NewUserResponse, UserSignUp, LoginUserRequest, LoginUserResponse)
+        schemas(HealthResponse, PingResponse, ErrorResponse, NewUserResponse, UserSignUp, LoginUserRequest, LoginUserResponse, FetchUserResponse)
     ),
     security(
         ("bearer_auth" = [])
@@ -52,7 +53,9 @@ use crate::modules::user::routes as user_routes;
         (name = "SignUp",
         description = "User registration and signup endpoints."),
         (name = "Login",
-        description = "User login endpoints.")
+        description = "User login endpoints."),
+        (name = "User Management",
+        description = "User management endpoints.")
     )
 )]
 pub struct ApiDoc;
