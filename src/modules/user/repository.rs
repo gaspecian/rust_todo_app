@@ -125,9 +125,12 @@ impl UserRepository {
 
     // Delete User
     pub async fn delete_user(&self, id: i64) -> Result<(), Error> {
-        sqlx::query!("DELETE FROM users WHERE id = $1", i32::try_from(id).map_err(|_| Error::Protocol("Invalid user ID".into()))?)
-            .execute(&self.pool)
-            .await?;
+        sqlx::query!(
+            "DELETE FROM users WHERE id = $1",
+            i32::try_from(id).map_err(|_| Error::Protocol("Invalid user ID".into()))?
+        )
+        .execute(&self.pool)
+        .await?;
 
         Ok(())
     }

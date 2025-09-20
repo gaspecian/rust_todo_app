@@ -250,14 +250,18 @@ impl UserService {
         };
 
         // Validate current password
-        let current_password = validated_request.current_password.as_ref()
+        let current_password = validated_request
+            .current_password
+            .as_ref()
             .ok_or_else(|| Json(ErrorResponse::new("Current password is required")))?;
-        
+
         if !password_validation(&user_info.password, current_password) {
             return Err(Json(ErrorResponse::new("Current password is incorrect")));
         }
 
-        let new_password = validated_request.new_password.as_ref()
+        let new_password = validated_request
+            .new_password
+            .as_ref()
             .ok_or_else(|| Json(ErrorResponse::new("New password is required")))?;
         if !validate_password(new_password) {
             return Err(Json(ErrorResponse::new("New password is not valid")));
