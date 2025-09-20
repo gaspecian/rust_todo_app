@@ -103,10 +103,28 @@ pub struct FetchUserResponse {
     pub surname: Option<String>,
     pub email: String,
     pub fone: Option<String>,
-    pub created_at: Option<OffsetDateTime>,
-    pub updated_at: Option<OffsetDateTime>,
+    pub created_at: Option<String>,
+    pub updated_at: Option<String>,
     // Check if user is active
     pub active: bool,
     // User activation date
-    pub activated_at: Option<OffsetDateTime>,
+    pub activated_at: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, ToSchema, Clone, Debug)]
+pub struct UpdateUserRequest {
+    pub name: Option<String>,
+    pub surname: Option<String>,
+    pub fone: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, ToSchema, Clone, Debug)]
+pub struct UpdatePasswordRequest {
+    pub current_password: Option<String>,
+    pub new_password: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, ToSchema, Clone, Debug)]
+pub struct UpdateUserResponse {
+    pub message: String,
 }

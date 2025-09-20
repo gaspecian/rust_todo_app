@@ -39,6 +39,9 @@ use crate::modules::user::routes as user_routes;
         user_routes::create_user_route,
         user_routes::login_user_route,
         user_routes::fetch_user_route,
+        user_routes::update_user_route,
+        user_routes::delete_user_route,
+        user_routes::update_password_route,
     ),
     components(
         schemas(HealthResponse, PingResponse, ErrorResponse, NewUserResponse, UserSignUp, LoginUserRequest, LoginUserResponse, FetchUserResponse)

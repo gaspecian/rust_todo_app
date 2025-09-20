@@ -13,7 +13,8 @@ use crate::{
         user::{
             interfaces::{
                 FetchUserResponse, LoginUserRequest, LoginUserResponse, NewUserResponse,
-                UserSignUp, ValidatedLoginUserRequest, ValidatedUserSignUp,
+                UpdatePasswordRequest, UpdateUserRequest, UpdateUserResponse, UserSignUp,
+                ValidatedLoginUserRequest, ValidatedUserSignUp,
             },
             repository::UserRepository,
         },
@@ -175,16 +176,127 @@ impl UserService {
             }
         };
 
-        Ok(FetchUserResponse {
-            username: user.username,
-            name: user.name,
-            surname: user.surname,
-            email: user.email,
-            fone: user.fone,
-            created_at: user.created_at,
-            updated_at: user.updated_at,
-            active: user.active,
-            activated_at: user.activated_at,
-        })
+        Ok(user)
+    }
+
+    // Update User Data
+    pub async fn update_user(
+        &self,
+        id: i64,
+        update_request: UpdateUserRequest,
+    ) -> Result<UpdateUserResponse, Json<ErrorResponse>> {
+        if let Some(ref fone) = update_request.fone {
+            if !validate_fone(fone) {
+                return Err(Json(ErrorResponse::new("Fone is not valid")));
+            }
+        }
+
+        match self
+            .user_repository
+            .update_user(
+                id,
+                update_request.name,
+                update_request.surname,
+                update_request.fone,
+            )
+            .await
+        {
+            Ok(()) => Ok(UpdateUserResponse {
+                message: "User updated successfully".to_string(),
+            }),
+            Err(e) => {
+                tracing::warn!("Error updating user: {}", e);
+                Err(Json(ErrorResponse::new("Failed to update user")))
+            }
+        }
+    }
+
+    // Update User Password
+    pub async fn update_password(
+        &self,
+        id: i64,
+        password_request: UpdatePasswordRequest,
+    ) -> Result<UpdateUserResponse, Json<ErrorResponse>> {
+        let required_fields = vec!["current_password", "new_password"];
+        let validated_request: UpdatePasswordRequest =
+            match validate_required_fields(&password_request, required_fields) {
+                Err(missing) => {
+                    return Err(Json(ErrorResponse::new(format!(
+                        "Missing required fields: {missing}"
+                    ))))
+                }
+                Ok(req) => req,
+            };
+
+        // Get current user password - need to get by user ID, not username
+        let user_info = match self.user_repository.fetch_user(id).await {
+            Ok(_) => {
+                // Get user login info by fetching username first, then getting login data
+                match self.user_repository.fetch_user(id).await {
+                    Ok(user) => {
+                        match self
+                            .user_repository
+                            .get_user_for_login(&user.username)
+                            .await
+                        {
+                            Ok(info) => info,
+                            Err(_) => return Err(Json(ErrorResponse::new("User not found"))),
+                        }
+                    }
+                    Err(_) => return Err(Json(ErrorResponse::new("User not found"))),
+                }
+            }
+            Err(_) => return Err(Json(ErrorResponse::new("User not found"))),
+        };
+
+        // Validate current password
+        let current_password = validated_request.current_password.as_ref()
+            .ok_or_else(|| Json(ErrorResponse::new("Current password is required")))?;
+        
+        if !password_validation(&user_info.password, current_password) {
+            return Err(Json(ErrorResponse::new("Current password is incorrect")));
+        }
+
+        let new_password = validated_request.new_password.as_ref()
+            .ok_or_else(|| Json(ErrorResponse::new("New password is required")))?;
+        if !validate_password(new_password) {
+            return Err(Json(ErrorResponse::new("New password is not valid")));
+        }
+
+        let hashed_password = match hash_password(new_password) {
+            Ok(hash) => hash,
+            Err(e) => {
+                return Err(Json(ErrorResponse::new(format!(
+                    "Password hashing error: {e}"
+                ))))
+            }
+        };
+
+        match self
+            .user_repository
+            .update_password(id, &hashed_password)
+            .await
+        {
+            Ok(()) => Ok(UpdateUserResponse {
+                message: "Password updated successfully".to_string(),
+            }),
+            Err(e) => {
+                tracing::warn!("Error updating password: {}", e);
+                Err(Json(ErrorResponse::new("Failed to update password")))
+            }
+        }
+    }
+
+    // Delete User
+    pub async fn delete_user(&self, id: i64) -> Result<UpdateUserResponse, Json<ErrorResponse>> {
+        match self.user_repository.delete_user(id).await {
+            Ok(()) => Ok(UpdateUserResponse {
+                message: "User deleted successfully".to_string(),
+            }),
+            Err(e) => {
+                tracing::warn!("Error deleting user: {}", e);
+                Err(Json(ErrorResponse::new("Failed to delete user")))
+            }
+        }
     }
 }

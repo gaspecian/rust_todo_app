@@ -71,7 +71,7 @@ impl UserRepository {
     pub async fn fetch_user(&self, id: i64) -> Result<FetchUserResponse, Error> {
         let result = sqlx::query!(
             "SELECT id, username, name, surname, email, fone, created_at, updated_at, active, activated_at FROM users WHERE id = $1",
-            id as i32
+            i32::try_from(id).map_err(|_| Error::Protocol("Invalid user ID".into()))?
         )
         .fetch_one(&self.pool)
         .await?;
@@ -82,10 +82,53 @@ impl UserRepository {
             surname: result.surname,
             email: result.email,
             fone: result.fone,
-            created_at: result.created_at,
-            updated_at: result.updated_at,
+            created_at: result.created_at.map(|dt| dt.to_string()),
+            updated_at: result.updated_at.map(|dt| dt.to_string()),
             active: result.active,
-            activated_at: result.activated_at,
+            activated_at: result.activated_at.map(|dt| dt.to_string()),
         })
+    }
+
+    // Update User Data
+    pub async fn update_user(
+        &self,
+        id: i64,
+        name: Option<String>,
+        surname: Option<String>,
+        fone: Option<String>,
+    ) -> Result<(), Error> {
+        sqlx::query!(
+            "UPDATE users SET name = $1, surname = $2, fone = $3, updated_at = NOW() WHERE id = $4",
+            name,
+            surname,
+            fone,
+            i32::try_from(id).map_err(|_| Error::Protocol("Invalid user ID".into()))?
+        )
+        .execute(&self.pool)
+        .await?;
+
+        Ok(())
+    }
+
+    // Update User Password
+    pub async fn update_password(&self, id: i64, new_password: &str) -> Result<(), Error> {
+        sqlx::query!(
+            "UPDATE users SET password = $1, updated_at = NOW() WHERE id = $2",
+            new_password,
+            i32::try_from(id).map_err(|_| Error::Protocol("Invalid user ID".into()))?
+        )
+        .execute(&self.pool)
+        .await?;
+
+        Ok(())
+    }
+
+    // Delete User
+    pub async fn delete_user(&self, id: i64) -> Result<(), Error> {
+        sqlx::query!("DELETE FROM users WHERE id = $1", i32::try_from(id).map_err(|_| Error::Protocol("Invalid user ID".into()))?)
+            .execute(&self.pool)
+            .await?;
+
+        Ok(())
     }
 }
