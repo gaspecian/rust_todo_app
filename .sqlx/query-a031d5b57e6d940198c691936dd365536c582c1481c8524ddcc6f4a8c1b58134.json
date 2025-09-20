@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT EXISTS(SELECT 1 FROM users WHERE email = $1)",
+  "query": "SELECT EXISTS(SELECT 1 FROM users where username = $1)",
   "describe": {
     "columns": [
       {
@@ -18,5 +18,5 @@
       null
     ]
   },
-  "hash": "1860915af47291fe425dd536ade0db4b8b18bc6083efcb685152ca5f740456bb"
+  "hash": "a031d5b57e6d940198c691936dd365536c582c1481c8524ddcc6f4a8c1b58134"
 }
