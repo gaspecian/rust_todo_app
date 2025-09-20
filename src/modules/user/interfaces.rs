@@ -128,3 +128,101 @@ pub struct UpdatePasswordRequest {
 pub struct UpdateUserResponse {
     pub message: String,
 }
+
+#[cfg(test)]
+#[allow(clippy::unwrap_used)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_user_signup_serialization() {
+        let signup = UserSignUp {
+            username: Some("testuser".to_string()),
+            name: Some("Test".to_string()),
+            surname: Some("User".to_string()),
+            email: Some("test@example.com".to_string()),
+            fone: Some("1234567890".to_string()),
+            password: Some("password123".to_string()),
+        };
+
+        let json = serde_json::to_string(&signup).unwrap();
+        assert!(json.contains("testuser"));
+        assert!(json.contains("test@example.com"));
+    }
+
+    #[test]
+    fn test_login_request_deserialization() {
+        let json = r#"{"username":"testuser","password":"password123"}"#;
+        let login: LoginUserRequest = serde_json::from_str(json).unwrap();
+        assert_eq!(login.username, Some("testuser".to_string()));
+        assert_eq!(login.password, Some("password123".to_string()));
+    }
+
+    #[test]
+    fn test_new_user_response() {
+        let response = NewUserResponse {
+            id: 123,
+            message: "User created successfully".to_string(),
+        };
+        assert_eq!(response.id, 123);
+        assert_eq!(response.message, "User created successfully");
+    }
+
+    #[test]
+    fn test_fetch_user_response() {
+        let response = FetchUserResponse {
+            username: "testuser".to_string(),
+            name: Some("Test".to_string()),
+            surname: Some("User".to_string()),
+            email: "test@example.com".to_string(),
+            fone: Some("1234567890".to_string()),
+            created_at: Some("2023-01-01T00:00:00Z".to_string()),
+            updated_at: None,
+            active: true,
+            activated_at: Some("2023-01-01T00:00:00Z".to_string()),
+        };
+
+        assert_eq!(response.username, "testuser");
+        assert_eq!(response.email, "test@example.com");
+        assert!(response.active);
+    }
+
+    #[test]
+    fn test_update_user_request() {
+        let update = UpdateUserRequest {
+            name: Some("Updated Name".to_string()),
+            surname: None,
+            fone: Some("9876543210".to_string()),
+        };
+
+        assert_eq!(update.name, Some("Updated Name".to_string()));
+        assert_eq!(update.surname, None);
+        assert_eq!(update.fone, Some("9876543210".to_string()));
+    }
+
+    #[test]
+    fn test_update_password_request() {
+        let update = UpdatePasswordRequest {
+            current_password: Some("oldpass".to_string()),
+            new_password: Some("newpass".to_string()),
+        };
+
+        assert_eq!(update.current_password, Some("oldpass".to_string()));
+        assert_eq!(update.new_password, Some("newpass".to_string()));
+    }
+
+    #[test]
+    fn test_validated_user_signup() {
+        let validated = ValidatedUserSignUp {
+            username: "testuser".to_string(),
+            name: "Test".to_string(),
+            surname: "User".to_string(),
+            email: "test@example.com".to_string(),
+            fone: "1234567890".to_string(),
+            password: "hashedpassword".to_string(),
+        };
+
+        assert_eq!(validated.username, "testuser");
+        assert_eq!(validated.email, "test@example.com");
+    }
+}

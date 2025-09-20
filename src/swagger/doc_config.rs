@@ -77,3 +77,48 @@ impl Modify for SecurityAddon {
         }
     }
 }
+
+#[cfg(test)]
+#[allow(clippy::unwrap_used)]
+mod tests {
+    use super::*;
+    use utoipa::OpenApi;
+
+    #[test]
+    fn test_api_doc_creation() {
+        let doc = ApiDoc::openapi();
+        assert_eq!(doc.info.title, "Todo App API");
+        assert_eq!(doc.info.version, "1.0.0");
+        assert!(doc.info.description.is_some());
+    }
+
+    #[test]
+    fn test_security_addon() {
+        let addon = SecurityAddon;
+        let mut openapi = utoipa::openapi::OpenApi::new(
+            utoipa::openapi::Info::new("Test", "1.0.0"),
+            utoipa::openapi::Paths::new(),
+        );
+
+        // Add components to test the security addon
+        openapi.components = Some(utoipa::openapi::Components::new());
+        addon.modify(&mut openapi);
+
+        assert!(openapi.components.is_some());
+        let components = openapi.components.unwrap();
+        assert!(components.security_schemes.contains_key("jwt_auth"));
+    }
+
+    #[test]
+    fn test_security_addon_no_components() {
+        let addon = SecurityAddon;
+        let mut openapi = utoipa::openapi::OpenApi::new(
+            utoipa::openapi::Info::new("Test", "1.0.0"),
+            utoipa::openapi::Paths::new(),
+        );
+
+        // Test with no components
+        addon.modify(&mut openapi);
+        assert!(openapi.components.is_none());
+    }
+}

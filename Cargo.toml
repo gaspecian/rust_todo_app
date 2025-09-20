@@ -36,6 +36,7 @@ serde_json = "1.0.143"
 [dev-dependencies]
 # Testing and development tools
 tokio-test = "0.4"
+tower = { version = "0.5", features = ["util"] }
 
 # Linting configuration
 [lints.rust]
